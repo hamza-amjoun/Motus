@@ -10,7 +10,7 @@
 #include "logic.h"
 #include "menu-items.h"
 
-
+int press;
 
 int main(int argc, char **argv)
 {
@@ -25,30 +25,31 @@ int main(int argc, char **argv)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);     // Initialize support for loading PNG and JPEG images
 
-    //SDL_Texture * menu_texture = initialize_texture_from_file(MENU_BG, renderer);
-    //SDL_Texture * login_texture = initialize_texture_from_file(LOG_IN, renderer);
-    bool running = true;
+
+
+    bool running = true; 
     SDL_Event event;
     while(running)
     {
         // Process events
         while(SDL_PollEvent(&event))
         {
-            if(event.type == SDL_QUIT)
-            {
-                running = false;
+         
+
+        switch(event.type){
+            case SDL_QUIT:
+                running = false; break;// X botton XD
+            case SDL_BUTTON_LEFT: /* Clic de la souris */
+                break;
             }
-        }
 
-        // Clear screen
-        SDL_RenderClear(renderer);
 
-        // Draw
-       // render_on_xy(menu_texture,renderer,0,0);
-        //render_on_xy(login_texture,renderer,487,361);
-        render_menu(renderer);
-        // Show what was drawn
-        SDL_RenderPresent(renderer);
+       
+}
+
+        SDL_RenderClear(renderer);// Clear screen
+        render_menu(renderer);   // Draw
+        SDL_RenderPresent(renderer);  // Show what was drawn
     }
 
     // Release resources
@@ -58,4 +59,5 @@ int main(int argc, char **argv)
     SDL_Quit();
 
     return 0;
+
 }

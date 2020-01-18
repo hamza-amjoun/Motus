@@ -32,13 +32,14 @@
 // how to play frame : 
 
 
-
+#define BOTTON_H 158
+#define BOTTON_W 43
 
 
 
 SDL_Texture *initialize_texture_from_file(const char* file_name, SDL_Renderer *renderer);
 void render_on_xy(const char* file_name,SDL_Renderer *renderer,int x,int y);
-void render_menu();
+void render_menu(SDL_Renderer *renderer);
 
 
 
