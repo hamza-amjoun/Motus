@@ -24,7 +24,7 @@ all: $(EXEC)
 # recipe for building the final executable
 $(EXEC): $(OBJS) $(HDRS) Makefile
 	$(CC) -o $@ $(OBJS) $(CFLAGS)
-evel (3.34.0-
+
 # recipe for building object files
 #$(OBJS): $(@:.o=.c) $(HDRS) Makefile
 #	$(CC) -o $@ $(@:.o=.c) -c $(CFLAGS)

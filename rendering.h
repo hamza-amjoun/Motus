@@ -1,7 +1,7 @@
 #ifndef RENDERING_H_
 #define RENDERING_H_
 
-
+#define MENU_BG "res/menu.png"
 #define LOGIN_BG "res/login.png"
 #define GAME_BG "res/Motus_bg.png"
 
@@ -35,4 +35,13 @@
 
 
 
+
+SDL_Texture *initialize_texture_from_file(const char* file_name, SDL_Renderer *renderer);
+void render_on_xy(const char* file_name,SDL_Renderer *renderer,int x,int y);
+void render_menu();
+
+
+
+
 #endif  // RENDERING_H_
+

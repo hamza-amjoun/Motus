@@ -8,37 +8,45 @@
 #include "rendering.h"
 #include "logic.h"
 
-// texture from image
-SDL_Texture* load_texture(SDL_Renderer* renderer, const char* path){
-    //The final texture
-    SDL_Texture* new_texture = NULL;
 
-    //Load image at specified path
-    SDL_Surface* loaded_surface = IMG_Load(path);
-    if(loaded_surface == NULL){
-        printf("Unable to load image %s! SDL_image Error: %s\n", path, IMG_GetError());
-    } else {
-        //Create texture from surface pixels
-        new_texture = SDL_CreateTextureFromSurface(renderer, loaded_surface);
-        if(new_texture == NULL){
-            printf("Unable to create texture from %s! SDL Error: %s\n", path, SDL_GetError());
-        }
+// game states :
+#define POST_PLAYING 0
+#define PLAYING_PREP 1
+#define PLAYING 2
+#
 
-        //Get rid of old loaded surface
-        SDL_FreeSurface(loaded_surface);
-    }
-
-    return new_texture;
+// file to texture
+SDL_Texture *initialize_texture_from_file(const char* file_name, SDL_Renderer *renderer) {
+    SDL_Surface *image = IMG_Load(file_name);
+    SDL_Texture * image_texture = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+    return image_texture;
 }
 
-// screen from texture
-void render_screen(SDL_Renderer* renderer, const char* path){
-    // simply show the chosen end screen
-	SDL_Texture* texture = load_texture(renderer, path);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+// render texture on (x,y):
+void render_on_xy(const char* file_name,SDL_Renderer *renderer,int x,int y){
+    SDL_Texture * texture = initialize_texture_from_file(file_name, renderer);
+    int height;int width;
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+    SDL_Rect destination;
+    destination.x = x;
+    destination.y = y;
+    destination.w = width;
+    destination.h = height;
+    SDL_RenderCopy(renderer,texture, NULL, &destination);
     SDL_DestroyTexture(texture);
-
 }
 
+// render all menu to screen
+void render_menu(SDL_Renderer *renderer){
 
-	
+    render_on_xy(MENU_BG,renderer,0,0);
+    render_on_xy(LOG_IN,renderer,487,361);
+    render_on_xy(SING_UP,renderer,331,361);
+    render_on_xy(PLAY_GEST,renderer,171,361);
+    render_on_xy(TOP_PLAYERS,renderer,394,413);
+    render_on_xy(HOW_TO,renderer,234,413);
+
+
+
+}
