@@ -1,8 +1,11 @@
 #ifndef RENDERING_H_
 #define RENDERING_H_
 
+#define DEFAULT_FONT "res/Orbitron-Bold.ttf"
+
 #define MENU_BG "res/menu.png"
 #define LOGIN_BG "res/login.png"
+#define SINGUP_BG "res/signup.png"
 #define GAME_BG "res/Motus_bg.png"
 
 // pics of nbr choises
@@ -32,14 +35,18 @@
 // how to play frame : 
 
 
-#define BOTTON_H 158
-#define BOTTON_W 43
+#define BOTTON_H 158 // H of used Bottons
+#define BOTTON_W 43 // W  of used Bottons
 
 
 
-SDL_Texture *initialize_texture_from_file(const char* file_name, SDL_Renderer *renderer);
-void render_on_xy(const char* file_name,SDL_Renderer *renderer,int x,int y);
-void render_menu(SDL_Renderer *renderer);
+SDL_Texture *initialize_texture_from_file(const char* file_name, SDL_Renderer *renderer); // img to textur
+void render_on_xy(const char* file_name,SDL_Renderer *renderer,int x,int y); // ren,der texture on (X,y)
+int render_menu(SDL_Renderer *renderer);
+void render_login(SDL_Renderer *renderer);
+void render_singup(SDL_Renderer *renderer);
+
+void render_text_on_xy(SDL_Renderer* renderer,const char* text,int x,int y);
 
 
 
