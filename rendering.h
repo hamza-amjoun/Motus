@@ -34,11 +34,20 @@
 #define RESET_BT "res/reset.png"
 #define LOGOUT_BT "res/logout2.png"
 
-// grids ; 
+// boxes background ;
+#define BOX_BLACK_BG "res/box_black.png"
+#define BOX_BLEU_BG "res/box_bleu.png"
+#define BOX_RED_BG "res/box_red.png"
+#define BOX_YELLOW_BG "res/box_yellow.png"
 
-#define GRID_6 "res/grid_6.png"
-// sing in menu :
-
+// ling select macros:
+#define LN_1 1
+#define LN_2 2
+#define LN_3 3
+#define LN_4 4
+#define LN_5 5
+#define LN_6 6
+#define LN_7 7
 // how to play frame : 
 
 
@@ -47,6 +56,8 @@
 
 #define ARROW_H 75
 #define ARROW_W 57
+
+#define BOX 51
 
 
 
@@ -58,7 +69,7 @@ void render_singup(SDL_Renderer *renderer);
 
 void render_text_on_xy(SDL_Renderer* renderer,const char* text,int x,int y,SDL_Color color);
 
-
+void render_text_on_box(SDL_Renderer* renderer,const char* text, int x,int y,SDL_Color color);
 
 
 #endif  // RENDERING_H_

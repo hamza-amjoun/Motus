@@ -15,4 +15,13 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text);
 
 void render_game_menu(SDL_Renderer *renderer);
 
+void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+
+void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+
+void render_empty_grid6(SDL_Renderer *renderer);
+
+
+
+
 #endif // MENU_ITEMS_H_

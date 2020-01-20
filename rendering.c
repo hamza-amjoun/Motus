@@ -48,15 +48,13 @@ void render_text_on_xy(SDL_Renderer* renderer,const char* text, int x,int y,SDL_
     TTF_Init();
     TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 17);
     SDL_Rect dest;
-    dest.x = x;
-    dest.y = y;
+    dest.x = x; dest.y = y;
     SDL_Surface * surface = TTF_RenderText_Blended(font, text, color);
     SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_QueryTexture(texture, NULL, NULL, &dest.w, &dest.h);
     SDL_RenderCopy(renderer, texture, NULL, &dest);
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
-
     TTF_CloseFont(font);
     TTF_Quit();
 }
@@ -89,7 +87,20 @@ return 0;
 }
 
 
-
+void render_text_on_box(SDL_Renderer* renderer,const char* text, int x,int y,SDL_Color color){
+    TTF_Init();
+    TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 40);
+    SDL_Rect dest;
+    dest.x = x; dest.y = y;
+    SDL_Surface * surface = TTF_RenderText_Blended(font, text, color);
+    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_QueryTexture(texture, NULL, NULL, &dest.w, &dest.h);
+    SDL_RenderCopy(renderer, texture, NULL, &dest);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    TTF_CloseFont(font);
+    TTF_Quit();
+}
 
 
 

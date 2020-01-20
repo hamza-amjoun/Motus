@@ -5,6 +5,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "game.h"
 #include "logic.h"
@@ -37,6 +38,33 @@ game_options_ game_options = { // defalt values
     .nbr_time=20,
 
 };
+
+
+linge6_ linge6_1 = {
+    .box1=1,
+    .box2=2,
+    .box3=3,
+    .box4=4,
+    .box5=1,
+    .box6=3,
+
+};
+
+
+linge6_ empty_linge = {
+    .box1=1,
+    .box2=1,
+    .box3=1,
+    .box4=1,
+    .box5=1,
+    .box6=1,
+    .text="HAMZA",
+    .ch1="O",
+    .ch2="A",
+
+};
+
+
 
 const SDL_Color white = { .r = 255, .g = 255, .b = 255};
 const SDL_Color black = { .r = 0, .g = 0, .b = 0};
@@ -293,6 +321,9 @@ void render_game_menu(SDL_Renderer *renderer){
     render_on_xy(RESET_BT,renderer,445-BOTTON_H-30,y3);
     render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60,y3);
 
+    render_empty_grid6(renderer); // temp
+    render_linge(renderer,linge6_1,LN_1);
+    render_linge_text(renderer,linge6_1,LN_1);
 
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -351,7 +382,58 @@ if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+4*nxt && mouse_y < y1
 
 }
 
+// render box : 
+void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
+    switch (boxBG){
+        case BOX_R_BLACK:
+            render_on_xy(BOX_BLACK_BG,renderer,x,y);
+            break;
+        case BOX_R_BLEU:
+            render_on_xy(BOX_BLEU_BG,renderer,x,y); break;
+        case BOX_R_RED:
+            render_on_xy(BOX_RED_BG,renderer,x,y); break;
+        case BOX_R_YELLOW:
+            render_on_xy(BOX_YELLOW_BG,renderer,x,y); break;
+    }
+}
 
+// render linge ;
+
+void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+
+
+            int x=266,y=180;
+            render_box(renderer,linge.box1,x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box2,x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box3,x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box4,x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box5,x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box6,x+5*BOX,y+(h_pose - 1)*BOX);
+
+
+}
+
+void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+            char* ch;
+            ch=&linge.ch1[0];
+            render_text_on_box(renderer,ch,275,190,white);
+            render_text_on_box(renderer,"m",275+BOX,190,white);
+            render_text_on_box(renderer,"M",275+2*BOX,190,white);
+            render_text_on_box(renderer,"M",275+3*BOX,190,white);
+            render_text_on_box(renderer,"M",275+4*BOX,190,white);
+            render_text_on_box(renderer,"M",275+5*BOX,190,white);
+            render_text_on_box(renderer,ch,275,170,white);
+}
+// empty 6 grid
+void render_empty_grid6(SDL_Renderer *renderer){
+    render_linge(renderer,empty_linge,LN_1);
+    render_linge(renderer,empty_linge,LN_2);
+    render_linge(renderer,empty_linge,LN_3);
+    render_linge(renderer,empty_linge,LN_4);
+    render_linge(renderer,empty_linge,LN_5);
+    render_linge(renderer,empty_linge,LN_6);
+
+}
 
 
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -450,7 +532,7 @@ void game_loop(SDL_Renderer *renderer){
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode){
                     case SDL_SCANCODE_ESCAPE: // Escape + return keys => return to menu
-                        game_options.select=NOT_SELECTED;
+                        //game_options.select=NOT_SELECTED;
                         break;
                     }
         }

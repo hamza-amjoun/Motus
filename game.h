@@ -47,6 +47,14 @@
 #define TIME_L_10 1
 #define TIME_L_15 2
 #define TIME_L_20 3
+
+// box rundring state :
+#define BOX_R_BLACK 1
+#define BOX_R_BLEU 2
+#define BOX_R_RED 3
+#define BOX_R_YELLOW 4
+
+//////////////////////////////////////////////////////////////////////////:::::://::::
 // structs:
 
 
@@ -93,5 +101,25 @@ typedef struct {
 	char passwd[25];
 } singup_txt_;
 
+
+
+
+// linge rendreing data :
+typedef struct {
+	int box1;
+	int box2;
+	int box3;
+	int box4;
+	int box5;
+	int box6;
+	char text[6];
+	char ch1[2];
+	char ch2[2];
+	char ch3[2];
+	char ch4[2];
+	char ch5[2];
+	char ch6[2];
+}linge6_;
+// ling rendring letters :
 
 #endif  // GAME_H_
