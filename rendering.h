@@ -46,7 +46,7 @@ int render_menu(SDL_Renderer *renderer);
 void render_login(SDL_Renderer *renderer);
 void render_singup(SDL_Renderer *renderer);
 
-void render_text_on_xy(SDL_Renderer* renderer,const char* text,int x,int y);
+void render_text_on_xy(SDL_Renderer* renderer,const char* text,int x,int y,SDL_Color color);
 
 
 

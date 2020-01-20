@@ -1,5 +1,15 @@
 #ifndef MENU_ITEMS_H_
 #define MENU_ITEMS_H_
 
+#define INPUT_S_ID 1
+#define INPUT_S_PASSWD 2
+
+void menu_loop(SDL_Renderer *renderer);
+void login_txt_input(SDL_Renderer* renderer,char* text);
+void login_passwd_input(SDL_Renderer* renderer,char* text);
+
+void singup_txt_input(SDL_Renderer* renderer,char* text);
+void singup_passwd_input(SDL_Renderer* renderer,char* text);
+
 
 #endif // MENU_ITEMS_H_
