@@ -5,11 +5,14 @@
 #define INPUT_S_PASSWD 2
 
 void menu_loop(SDL_Renderer *renderer);
+void game_loop(SDL_Renderer *renderer);
+
 void login_txt_input(SDL_Renderer* renderer,char* text);
 void login_passwd_input(SDL_Renderer* renderer,char* text);
 
 void singup_txt_input(SDL_Renderer* renderer,char* text);
 void singup_passwd_input(SDL_Renderer* renderer,char* text);
 
+void render_game_menu(SDL_Renderer *renderer);
 
 #endif // MENU_ITEMS_H_

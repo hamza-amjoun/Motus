@@ -13,6 +13,20 @@
 #define TOP_PLAYERS_SELECTED 4
 #define HOW_TO_PLAY_SELECTED 5
 
+// game_menu selects:
+#define NOT_SELECTED 0
+#define START_SELECTED 1
+#define RESET_SELECTED 2
+#define LOGOUT_SELECTED 3
+#define NBR_6_SELECTED 6
+#define NBR_7_SELECTED 7
+#define NBR_8_SELECTED 8
+#define NBR_9_SELECTED 9
+#define NBR_10_SELECTED 10
+#define TIME_10_SELECTED 11
+#define TIME_15_SELECTED 12
+#define TIME_20_SELECTED 13
+
 //game states : 
 #define MENU_STATE 0
 #define PLAYING_STATE 1
@@ -50,8 +64,10 @@ typedef struct {
 	int input_state;
 }menu_;
 
-//game menu selection :
+//game_menu selection :
 typedef struct{
+	int select;
+	int hover;
 	int nbr_letters;
 	int nbr_time;
 	int score;

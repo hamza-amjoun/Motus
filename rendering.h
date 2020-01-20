@@ -6,13 +6,15 @@
 #define MENU_BG "res/menu.png"
 #define LOGIN_BG "res/login.png"
 #define SINGUP_BG "res/signup.png"
+#define TOP_PLAYERS_BG "res/top_players_bg.png"
+#define HOW_TO_BG "res/how_to_play_bg.png"
 #define GAME_BG "res/Motus_bg.png"
 
 // pics of nbr choises
 #define NBR_6 "res/nbr_6.png" 
 #define NBR_7 "res/nbr_7.png"
 #define NBR_8 "res/nbr_8.png"
-#define NBR_9 "res/nbr9_.png"
+#define NBR_9 "res/nbr_9.png"
 #define NBR_10 "res/nbr_10.png"
 
 // pics of Time choises
@@ -27,6 +29,11 @@
 #define SING_UP "res/sing.png"
 #define TOP_PLAYERS "res/top.png"
 
+// game menu bottons :
+#define START_BT "res/start.png"
+#define RESET_BT "res/reset.png"
+#define LOGOUT_BT "res/logout2.png"
+
 // grids ; 
 
 #define GRID_6 "res/grid_6.png"
@@ -37,6 +44,9 @@
 
 #define BOTTON_H 158 // H of used Bottons
 #define BOTTON_W 43 // W  of used Bottons
+
+#define ARROW_H 75
+#define ARROW_W 57
 
 
 

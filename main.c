@@ -29,9 +29,9 @@ int main(int argc, char **argv)
     
 
     /////////////////////////////////////////////////////////::
-    menu_loop(renderer);
+    //menu_loop(renderer);
     ////////////////////////////////////////////////////////
-
+    game_loop(renderer);
 
 
     SDL_Delay(1000/30); // 30fps
