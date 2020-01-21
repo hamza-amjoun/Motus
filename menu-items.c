@@ -20,10 +20,8 @@ bool running = true;
 int i=0;
 char hide[25];
 
+
 int input_state = 1;
-
-
-//SDL_EnableUNICODE( 1 );
 
 
 // struct menu initialisation
@@ -42,26 +40,15 @@ game_options_ game_options = { // defalt values
 
 };
 
+// temp lings for testing:
+linge6_ linge6_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
+linge9_ linge9_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
 
-linge6_ linge6_1 = {
-    .box[0]=1,
-    .box[1]=2,
-    .box[2]=3,
-    .box[3]=4,
-    .box[4]=1,
-    .box[5]=3,
-};
-
-
-linge6_ empty_linge = {
-    .box[0]=1,
-    .box[1]=1,
-    .box[2]=1,
-    .box[3]=1,
-    .box[4]=1,
-    .box[5]=1,
-};
-
+linge6_ empty_linge6 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,};
+linge7_ empty_linge7 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1};
+linge8_ empty_linge8 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1};
+linge9_ empty_linge9 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1,.box[8]=1};
+linge10_ empty_linge10 ={ .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1,.box[8]=1,.box[9]=1,};
 
 
 const SDL_Color white = { .r = 255, .g = 255, .b = 255};
@@ -205,12 +192,10 @@ void singup_txt_input(SDL_Renderer* renderer,char* text){
                     case SDL_SCANCODE_RETURN:
                         menu.input_state = INPUT_S_PASSWD;
                         break;
-
                 }
         }
     }
-
-        render_text_on_xy(renderer,text,340,315,black);
+render_text_on_xy(renderer,text,340,315,black);
 }
 
 
@@ -279,8 +264,6 @@ void render_singup(SDL_Renderer *renderer){
 }
 }
 
-
-
 //render top players :
 
 void render_top_players(SDL_Renderer *renderer){
@@ -289,10 +272,8 @@ void render_top_players(SDL_Renderer *renderer){
 
 
 void render_game_menu(SDL_Renderer *renderer){
-
     int x1=24,y1=242,nxt=54;  // x1,y1 pos of first botton, nxt : how far is next pos 
     render_on_xy(GAME_BG,renderer,0,0);
-
 
     render_on_xy(NBR_6,renderer,x1,y1);
     render_on_xy(NBR_7,renderer,x1,y1+nxt);
@@ -315,10 +296,14 @@ void render_game_menu(SDL_Renderer *renderer){
 
 
 
-    render_empty_grid6(renderer);
-    player6_input(renderer ,linge6_1.text,linge6_1.chow,linge6_1.box, 1);
-    render_linge(renderer,linge6_1,LN_1);
-    render_linge_text(renderer,linge6_1,LN_1);
+    //render_empty_grid6(renderer);
+    render_empty_grid9(renderer);
+    player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
+    render_linge9(renderer,linge9_1,LN_1);
+    render_linge_text9(renderer,linge9_1,LN_1);
+
+
+
 
 
 
@@ -456,23 +441,62 @@ void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
 
 // render linge ;
 
-void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+            int x=266,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);}
 
-
-            int x=266,y=180;
+void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
+            int x=266-25,y=160;
             render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);}
 
+void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
+            int x=266-50,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);}
 
-}
+void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
+            int x=266-75,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);}
 
-
+void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
+            int x=266-100,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
 ////////////////////////////////////////////////////////////////////////////////////
-char * player6_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose){
+void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose){
 SDL_Event event;  //SDL_Event event;
                  while(SDL_PollEvent(&event)){
                     switch (event.type){
@@ -541,11 +565,6 @@ SDL_Event event;  //SDL_Event event;
                                     text[i]='B'; chow[i]=B;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_N:
                                     text[i]='N'; chow[i]=N;box[i]=BOX_R_BLEU; i++; break;
-
-
-
-
-
             }
         }
     }
@@ -555,27 +574,110 @@ SDL_Event event;  //SDL_Event event;
 
 
 // linge text data chow :
-void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+void render_linge_text6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+    int x=266,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);}
 
-            int x=266,y=180;
-            render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-            render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+void render_linge_text7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
+    int x=266-25,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);}
 
-}
-// empty 6 grid
+void render_linge_text8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
+    int x=266-50,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge_text9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
+    int x=266-75,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
+    int x=266-100,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[9],x+9*BOX,y+(h_pose - 1)*BOX);}
+
+
+
+// empty  grids :
 void render_empty_grid6(SDL_Renderer *renderer){
-    render_linge(renderer,empty_linge,LN_1);
-    render_linge(renderer,empty_linge,LN_2);
-    render_linge(renderer,empty_linge,LN_3);
-    render_linge(renderer,empty_linge,LN_4);
-    render_linge(renderer,empty_linge,LN_5);
-    render_linge(renderer,empty_linge,LN_6);
+    render_linge6(renderer,empty_linge6,LN_1);
+    render_linge6(renderer,empty_linge6,LN_2);
+    render_linge6(renderer,empty_linge6,LN_3);
+    render_linge6(renderer,empty_linge6,LN_4);
+    render_linge6(renderer,empty_linge6,LN_5);
+    render_linge6(renderer,empty_linge6,LN_6);
+    render_linge6(renderer,empty_linge6,LN_7);}
 
-}
+void render_empty_grid7(SDL_Renderer *renderer){
+    render_linge7(renderer,empty_linge7,LN_1);
+    render_linge7(renderer,empty_linge7,LN_2);
+    render_linge7(renderer,empty_linge7,LN_3);
+    render_linge7(renderer,empty_linge7,LN_4);
+    render_linge7(renderer,empty_linge7,LN_5);
+    render_linge7(renderer,empty_linge7,LN_6);
+    render_linge7(renderer,empty_linge7,LN_7);}
+
+void render_empty_grid8(SDL_Renderer *renderer){
+    render_linge8(renderer,empty_linge8,LN_1);
+    render_linge8(renderer,empty_linge8,LN_2);
+    render_linge8(renderer,empty_linge8,LN_3);
+    render_linge8(renderer,empty_linge8,LN_4);
+    render_linge8(renderer,empty_linge8,LN_5);
+    render_linge8(renderer,empty_linge8,LN_6);
+    render_linge8(renderer,empty_linge8,LN_7);}
+
+void render_empty_grid9(SDL_Renderer *renderer){
+    render_linge9(renderer,empty_linge9,LN_1);
+    render_linge9(renderer,empty_linge9,LN_2);
+    render_linge9(renderer,empty_linge9,LN_3);
+    render_linge9(renderer,empty_linge9,LN_4);
+    render_linge9(renderer,empty_linge9,LN_5);
+    render_linge9(renderer,empty_linge9,LN_6);
+    render_linge9(renderer,empty_linge9,LN_7);}
+
+void render_empty_grid10(SDL_Renderer *renderer){
+    render_linge10(renderer,empty_linge10,LN_1);
+    render_linge10(renderer,empty_linge10,LN_2);
+    render_linge10(renderer,empty_linge10,LN_3);
+    render_linge10(renderer,empty_linge10,LN_4);
+    render_linge10(renderer,empty_linge10,LN_5);
+    render_linge10(renderer,empty_linge10,LN_6);
+    render_linge10(renderer,empty_linge10,LN_7);}
+
+
 
 
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -686,6 +788,7 @@ void game_loop(SDL_Renderer *renderer){
     // cases: 
 
     render_game_menu(renderer);
+
 
     SDL_RenderPresent(renderer); 
     }

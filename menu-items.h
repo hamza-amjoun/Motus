@@ -15,15 +15,30 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text);
 
 void render_game_menu(SDL_Renderer *renderer);
 
-void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose);
 
-void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+// rendering lines :
+void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose);
+void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose);
+void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose);
+void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
+
+void render_linge_text6(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+void render_linge_text7(SDL_Renderer *renderer,linge7_ linge,int h_pose);
+void render_linge_text8(SDL_Renderer *renderer,linge8_ linge,int h_pose);
+void render_linge_text9(SDL_Renderer *renderer,linge9_ linge,int h_pose);
+void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
 
 void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y);
 
-char * player6_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose);
+void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose);
 
 void render_empty_grid6(SDL_Renderer *renderer);
+void render_empty_grid7(SDL_Renderer *renderer);
+void render_empty_grid8(SDL_Renderer *renderer);
+void render_empty_grid9(SDL_Renderer *renderer);
+void render_empty_grid10(SDL_Renderer *renderer);
+
 
 
 

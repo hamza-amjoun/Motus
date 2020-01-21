@@ -134,15 +134,111 @@ typedef struct {
 
 
 
-// linge rendreing data :
+// linge  data : 6
 typedef struct {
 	// boxes BG
 	int box[6];
 	// entred data :
+	char text[6];
+	// boxes text
+	int chow[6];
+}linge6_;
+
+// linge  data : 7
+typedef struct {
+	// boxes BG
+	int box[7];
+	// entred data :
 	char text[7];
 	// boxes text
 	int chow[7];
-}linge6_;
-// ling rendring letters :
+}linge7_;
+
+
+// linge  data : 8
+typedef struct {
+	// boxes BG
+	int box[8];
+	// entred data :
+	char text[8];
+	// boxes text
+	int chow[8];
+}linge8_;
+
+// linge  data : 9
+typedef struct {
+	// boxes BG
+	int box[9];
+	// entred data :
+	char text[9];
+	// boxes text
+	int chow[9];
+}linge9_;
+
+// linge  data : 10
+typedef struct {
+	// boxes BG
+	int box[10];
+	// entred data :
+	char text[10];
+	// boxes text
+	int chow[10];
+}linge10_;
+
+
+
+// all data of all lings : we have to show them all xd
+typedef struct {
+	linge6_ linge1;
+	linge6_ linge2;
+	linge6_ linge3;
+	linge6_ linge4;
+	linge6_ linge5;
+	linge6_ linge6;
+	linge6_ linge7;
+} data_grid6_;
+
+
+typedef struct {
+	linge7_ linge1;
+	linge7_ linge2;
+	linge7_ linge3;
+	linge7_ linge4;
+	linge7_ linge5;
+	linge7_ linge6;
+	linge7_ linge7;
+} data_grid7_;
+
+typedef struct {
+	linge8_ linge1;
+	linge8_ linge2;
+	linge8_ linge3;
+	linge8_ linge4;
+	linge8_ linge5;
+	linge8_ linge6;
+	linge8_ linge7;
+} data_grid8_;
+
+typedef struct {
+	linge9_ linge1;
+	linge9_ linge2;
+	linge9_ linge3;
+	linge9_ linge4;
+	linge9_ linge5;
+	linge9_ linge6;
+	linge9_ linge7;
+} data_grid9_;
+
+typedef struct {
+	linge10_ linge1;
+	linge10_ linge2;
+	linge10_ linge3;
+	linge10_ linge4;
+	linge10_ linge5;
+	linge10_ linge6;
+	linge10_ linge7;
+} data_grid10_;
+
+
 
 #endif  // GAME_H_
