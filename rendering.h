@@ -40,6 +40,35 @@
 #define BOX_RED_BG "res/box_red.png"
 #define BOX_YELLOW_BG "res/box_yellow.png"
 
+
+// alphabets : haerd worker I know xd
+#define A_R "res/a.png"
+#define B_R "res/b.png"
+#define C_R "res/c.png"
+#define D_R "res/d.png"
+#define E_R "res/e.png"
+#define F_R "res/f.png"
+#define G_R "res/g.png"
+#define H_R "res/h.png"
+#define I_R "res/i.png"
+#define J_R "res/j.png"
+#define K_R "res/k.png"
+#define L_R "res/l.png"
+#define M_R "res/m.png"
+#define N_R "res/n.png"
+#define O_R "res/o.png"
+#define P_R "res/p.png"
+#define Q_R "res/q.png"
+#define R_R "res/r.png"
+#define S_R "res/s.png"
+#define T_R "res/t.png"
+#define U_R "res/u.png"
+#define V_R "res/v.png"
+#define W_R "res/w.png"
+#define X_R "res/x.png"
+#define Y_R "res/y.png"
+#define Z_R "res/z.png"
+
 // ling select macros:
 #define LN_1 1
 #define LN_2 2

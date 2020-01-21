@@ -23,6 +23,9 @@ char hide[25];
 int input_state = 1;
 
 
+//SDL_EnableUNICODE( 1 );
+
+
 // struct menu initialisation
 menu_ menu = {
 	.select=0,
@@ -41,27 +44,22 @@ game_options_ game_options = { // defalt values
 
 
 linge6_ linge6_1 = {
-    .box1=1,
-    .box2=2,
-    .box3=3,
-    .box4=4,
-    .box5=1,
-    .box6=3,
-
+    .box[0]=1,
+    .box[1]=2,
+    .box[2]=3,
+    .box[3]=4,
+    .box[4]=1,
+    .box[5]=3,
 };
 
 
 linge6_ empty_linge = {
-    .box1=1,
-    .box2=1,
-    .box3=1,
-    .box4=1,
-    .box5=1,
-    .box6=1,
-    .text="HAMZA",
-    .ch1="O",
-    .ch2="A",
-
+    .box[0]=1,
+    .box[1]=1,
+    .box[2]=1,
+    .box[3]=1,
+    .box[4]=1,
+    .box[5]=1,
 };
 
 
@@ -182,15 +180,6 @@ void render_login(SDL_Renderer *renderer){
     
 
     }
-
-
-
-
-
-
-
-
-
 
 void singup_txt_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
@@ -321,9 +310,17 @@ void render_game_menu(SDL_Renderer *renderer){
     render_on_xy(RESET_BT,renderer,445-BOTTON_H-30,y3);
     render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60,y3);
 
-    render_empty_grid6(renderer); // temp
+
+
+
+
+
+    render_empty_grid6(renderer);
+    player6_input(renderer ,linge6_1.text,linge6_1.chow,linge6_1.box, 1);
     render_linge(renderer,linge6_1,LN_1);
     render_linge_text(renderer,linge6_1,LN_1);
+
+
 
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -397,32 +394,177 @@ void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
     }
 }
 
+
+// render box text : 
+void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
+    switch (boxCH){
+        case A:
+            render_on_xy(A_R,renderer,x,y);break;
+        case B:
+            render_on_xy(B_R,renderer,x,y);break;
+        case C:
+            render_on_xy(C_R,renderer,x,y);break;
+        case D:
+            render_on_xy(D_R,renderer,x,y);break;
+        case E:
+            render_on_xy(E_R,renderer,x,y);break;
+        case F:
+            render_on_xy(F_R,renderer,x,y);break;
+        case G:
+            render_on_xy(G_R,renderer,x,y);break;
+        case H:
+            render_on_xy(H_R,renderer,x,y);break;
+        case I:
+            render_on_xy(I_R,renderer,x,y);break;
+        case J:
+            render_on_xy(J_R,renderer,x,y);break;
+        case K:
+            render_on_xy(K_R,renderer,x,y);break;
+        case L:
+            render_on_xy(L_R,renderer,x,y);break;
+        case M:
+            render_on_xy(M_R,renderer,x,y);break;
+        case N:
+            render_on_xy(N_R,renderer,x,y);break;
+        case O:
+            render_on_xy(O_R,renderer,x,y);break;
+        case P:
+            render_on_xy(P_R,renderer,x,y);break;
+        case Q:
+            render_on_xy(Q_R,renderer,x,y);break;
+        case R:
+            render_on_xy(R_R,renderer,x,y);break;
+        case S:
+            render_on_xy(S_R,renderer,x,y);break;
+        case T:
+            render_on_xy(T_R,renderer,x,y);break;
+        case U:
+            render_on_xy(U_R,renderer,x,y);break;
+        case V:
+            render_on_xy(V_R,renderer,x,y);break;
+        case W:
+            render_on_xy(W_R,renderer,x,y);break;
+        case X:
+            render_on_xy(X_R,renderer,x,y);break;
+        case Y:
+            render_on_xy(Y_R,renderer,x,y);break;
+        case Z:
+            render_on_xy(Z_R,renderer,x,y);break;
+
+    }
+}
+
 // render linge ;
 
 void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose){
 
 
             int x=266,y=180;
-            render_box(renderer,linge.box1,x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box2,x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box3,x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box4,x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box5,x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box6,x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
 
 
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////
+char * player6_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose){
+SDL_Event event;  //SDL_Event event;
+                 while(SDL_PollEvent(&event)){
+                    switch (event.type){
+                        case SDL_QUIT:
+                               running = false; break;
+                        case SDL_KEYDOWN: // Spesial keys cases
+                            switch (event.key.keysym.scancode){ 
+                                case SDL_SCANCODE_ESCAPE: // go back
+                                    //menu.select=NOT_SELECTED;
+                                    //reset_input();
+                                    break;
+                                case SDL_SCANCODE_BACKSPACE: // del last element :
+                                    text[i-1]=0;chow[i-1]=0;box[i-1]=BOX_R_BLACK; i--; break;
+                                 case SDL_SCANCODE_RETURN:
+                                // enter case
+                                    break;
+                                case SDL_SCANCODE_Q:
+                                    text[i]='A'; chow[i]=A;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_W:
+                                    text[i]='Z'; chow[i]=Z;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_E:
+                                    text[i]='E'; chow[i]=E;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_R:
+                                    text[i]='R'; chow[i]=R;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_T:
+                                    text[i]='T'; chow[i]=T;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_Y:
+                                    text[i]='Y'; chow[i]=Y;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_U:
+                                    text[i]='U'; chow[i]=U;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_I:
+                                    text[i]='I'; chow[i]=I;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_O:
+                                    text[i]='O'; chow[i]=O;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_P:
+                                    text[i]='P'; chow[i]=P;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_A:
+                                    text[i]='Q'; chow[i]=Q;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_S:
+                                    text[i]='S'; chow[i]=S;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_D:
+                                    text[i]='D'; chow[i]=D;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_F:
+                                    text[i]='F'; chow[i]=F;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_G:
+                                    text[i]='G'; chow[i]=G;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_H:
+                                    text[i]='H'; chow[i]=H;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_J:
+                                    text[i]='J'; chow[i]=J;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_K:
+                                    text[i]='K'; chow[i]=K;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_L:
+                                    text[i]='L'; chow[i]=L;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_SEMICOLON:
+                                    text[i]='M'; chow[i]=M;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_Z:
+                                    text[i]='W'; chow[i]=W;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_X:
+                                    text[i]='X'; chow[i]=X;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_C:
+                                    text[i]='C'; chow[i]=C;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_V:
+                                    text[i]='V'; chow[i]=V;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_B:
+                                    text[i]='B'; chow[i]=B;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_N:
+                                    text[i]='N'; chow[i]=N;box[i]=BOX_R_BLEU; i++; break;
+
+
+
+
+
+            }
+        }
+    }
+
+
+}
+
+
+// linge text data chow :
 void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose){
-            char* ch;
-            ch=&linge.ch1[0];
-            render_text_on_box(renderer,ch,275,190,white);
-            render_text_on_box(renderer,"m",275+BOX,190,white);
-            render_text_on_box(renderer,"M",275+2*BOX,190,white);
-            render_text_on_box(renderer,"M",275+3*BOX,190,white);
-            render_text_on_box(renderer,"M",275+4*BOX,190,white);
-            render_text_on_box(renderer,"M",275+5*BOX,190,white);
-            render_text_on_box(renderer,ch,275,170,white);
+
+            int x=266,y=180;
+            render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+            render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+
 }
 // empty 6 grid
 void render_empty_grid6(SDL_Renderer *renderer){

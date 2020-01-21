@@ -19,6 +19,10 @@ void render_linge(SDL_Renderer *renderer,linge6_ linge,int h_pose);
 
 void render_linge_text(SDL_Renderer *renderer,linge6_ linge,int h_pose);
 
+void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y);
+
+char * player6_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose);
+
 void render_empty_grid6(SDL_Renderer *renderer);
 
 

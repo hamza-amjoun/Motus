@@ -54,6 +54,36 @@
 #define BOX_R_RED 3
 #define BOX_R_YELLOW 4
 
+
+// boxes letters enums :
+
+#define A 97
+#define B 98
+#define C 99
+#define D 100
+#define E 101
+#define F 102
+#define G 103
+#define H 104
+#define I 105
+#define J 106
+#define K 107
+#define L 108
+#define M 109
+#define N 110
+#define O 111
+#define P 112
+#define Q 113
+#define R 114
+#define S 115
+#define T 116
+#define U 117
+#define V 118
+#define W 119
+#define X 120
+#define Y 121
+#define Z 122
+
 //////////////////////////////////////////////////////////////////////////:::::://::::
 // structs:
 
@@ -106,19 +136,12 @@ typedef struct {
 
 // linge rendreing data :
 typedef struct {
-	int box1;
-	int box2;
-	int box3;
-	int box4;
-	int box5;
-	int box6;
-	char text[6];
-	char ch1[2];
-	char ch2[2];
-	char ch3[2];
-	char ch4[2];
-	char ch5[2];
-	char ch6[2];
+	// boxes BG
+	int box[6];
+	// entred data :
+	char text[7];
+	// boxes text
+	int chow[7];
 }linge6_;
 // ling rendring letters :
 
