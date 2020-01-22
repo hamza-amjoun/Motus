@@ -25,25 +25,31 @@ int input_state = 1;
 
 
 // struct menu initialisation
-menu_ menu = {
-	.select=0,
-	.hover = 0,
-    .input_state = 1
-};
+menu_ menu = {.select=0,.hover = 0,.input_state = 1};
 
 
 game_options_ game_options = { // defalt values 
     .select=0,
     .hover = 0,
-    .nbr_letters=6,
+    .nbr_letters=0,
     .nbr_time=20,
 
 };
+
+
+/// game state
+game_ game= {.state= MENU_STATE,};
+
+user_ user;
+// player data :
+singup_txt_ singup_player;
+
 
 // temp lings for testing:
 linge6_ linge6_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
 linge9_ linge9_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
 
+// empty linges data for rundring :
 linge6_ empty_linge6 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,};
 linge7_ empty_linge7 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1};
 linge8_ empty_linge8 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1};
@@ -123,11 +129,18 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
                         text[strlen(text)-1] = 0;
                         break;
                     case SDL_SCANCODE_RETURN:
-                        // look for data in file
+                        if (login(login_data)==1) {
+                            game.state=PLAYING_STATE;
+                        } else {
+                            reset_input();
+                        }
+                        
                         break;
 
                 }
         }
+    
+
     }
        
         render_text_on_xy(renderer,login_data.id,340,315,black);
@@ -221,13 +234,14 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text){
                         text[strlen(text)-1] = 0;
                         break;
                     case SDL_SCANCODE_RETURN:
-                        // look for data in file
+                        signup(singup_data);
+                        strcpy(singup_data.id,"");
+                        strcpy(singup_data.passwd,"");
                         break;
 
                 }
         }
     }
-       
         render_text_on_xy(renderer,singup_data.id,340,315,black);
         
         i=0;
@@ -292,23 +306,18 @@ void render_game_menu(SDL_Renderer *renderer){
     render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60,y3);
 
 
-
-
-
-
-    //render_empty_grid6(renderer);
-    render_empty_grid9(renderer);
-    player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
-    render_linge9(renderer,linge9_1,LN_1);
-    render_linge_text9(renderer,linge9_1,LN_1);
-
-
-
-
-
-
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
+
+
+
+    //play_game(renderer,6,20,user);
+    //render_empty_grid9(renderer);
+    //player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
+    //render_linge9(renderer,linge9_1,LN_1);
+    //render_linge_text9(renderer,linge9_1,LN_1);
+
+
     
     // bottons hover effect : /////////////////////////////////////////////////////////
     if (mouse_x > 445 && mouse_x < 445 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
@@ -633,52 +642,254 @@ void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
 
 // empty  grids :
 void render_empty_grid6(SDL_Renderer *renderer){
-    render_linge6(renderer,empty_linge6,LN_1);
-    render_linge6(renderer,empty_linge6,LN_2);
-    render_linge6(renderer,empty_linge6,LN_3);
-    render_linge6(renderer,empty_linge6,LN_4);
-    render_linge6(renderer,empty_linge6,LN_5);
-    render_linge6(renderer,empty_linge6,LN_6);
+    render_linge6(renderer,empty_linge6,LN_1);render_linge6(renderer,empty_linge6,LN_2);
+    render_linge6(renderer,empty_linge6,LN_3);render_linge6(renderer,empty_linge6,LN_4);
+    render_linge6(renderer,empty_linge6,LN_5);render_linge6(renderer,empty_linge6,LN_6);
     render_linge6(renderer,empty_linge6,LN_7);}
 
 void render_empty_grid7(SDL_Renderer *renderer){
-    render_linge7(renderer,empty_linge7,LN_1);
-    render_linge7(renderer,empty_linge7,LN_2);
-    render_linge7(renderer,empty_linge7,LN_3);
-    render_linge7(renderer,empty_linge7,LN_4);
-    render_linge7(renderer,empty_linge7,LN_5);
-    render_linge7(renderer,empty_linge7,LN_6);
+    render_linge7(renderer,empty_linge7,LN_1);render_linge7(renderer,empty_linge7,LN_2);
+    render_linge7(renderer,empty_linge7,LN_3);render_linge7(renderer,empty_linge7,LN_4);
+    render_linge7(renderer,empty_linge7,LN_5);render_linge7(renderer,empty_linge7,LN_6);
     render_linge7(renderer,empty_linge7,LN_7);}
 
 void render_empty_grid8(SDL_Renderer *renderer){
-    render_linge8(renderer,empty_linge8,LN_1);
-    render_linge8(renderer,empty_linge8,LN_2);
-    render_linge8(renderer,empty_linge8,LN_3);
-    render_linge8(renderer,empty_linge8,LN_4);
-    render_linge8(renderer,empty_linge8,LN_5);
-    render_linge8(renderer,empty_linge8,LN_6);
+    render_linge8(renderer,empty_linge8,LN_1);render_linge8(renderer,empty_linge8,LN_2);
+    render_linge8(renderer,empty_linge8,LN_3);render_linge8(renderer,empty_linge8,LN_4);
+    render_linge8(renderer,empty_linge8,LN_5);render_linge8(renderer,empty_linge8,LN_6);
     render_linge8(renderer,empty_linge8,LN_7);}
 
 void render_empty_grid9(SDL_Renderer *renderer){
-    render_linge9(renderer,empty_linge9,LN_1);
-    render_linge9(renderer,empty_linge9,LN_2);
-    render_linge9(renderer,empty_linge9,LN_3);
-    render_linge9(renderer,empty_linge9,LN_4);
-    render_linge9(renderer,empty_linge9,LN_5);
-    render_linge9(renderer,empty_linge9,LN_6);
+    render_linge9(renderer,empty_linge9,LN_1);render_linge9(renderer,empty_linge9,LN_2);
+    render_linge9(renderer,empty_linge9,LN_3);render_linge9(renderer,empty_linge9,LN_4);
+    render_linge9(renderer,empty_linge9,LN_5);render_linge9(renderer,empty_linge9,LN_6);
     render_linge9(renderer,empty_linge9,LN_7);}
 
 void render_empty_grid10(SDL_Renderer *renderer){
-    render_linge10(renderer,empty_linge10,LN_1);
-    render_linge10(renderer,empty_linge10,LN_2);
-    render_linge10(renderer,empty_linge10,LN_3);
-    render_linge10(renderer,empty_linge10,LN_4);
-    render_linge10(renderer,empty_linge10,LN_5);
-    render_linge10(renderer,empty_linge10,LN_6);
+    render_linge10(renderer,empty_linge10,LN_1);render_linge10(renderer,empty_linge10,LN_2);
+    render_linge10(renderer,empty_linge10,LN_3);render_linge10(renderer,empty_linge10,LN_4);
+    render_linge10(renderer,empty_linge10,LN_5);render_linge10(renderer,empty_linge10,LN_6);
     render_linge10(renderer,empty_linge10,LN_7);}
 
+///////////////////////////////////////////
 
 
+void render_play_as_gest(SDL_Renderer *renderer){
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"WARNING","Your Progress wont be saved :(",NULL);
+                game.state=PLAYING_STATE;
+                menu.select=NOT_SELECTED;
+                menu.hover=NOT_SELECTED;
+                user.score=699;
+}
+                                                                /////////////////////////////:
+                                            ////////////////////
+////////////////////////////////////////////                            ////////////////////////////
+int signup(singup_txt_ player){
+    FILE* f=fopen("data/players.bin","ab");
+    if(!f) return 0;
+    fwrite(&player,sizeof(player),1,f);
+    fclose(f);
+    return 1;
+}
+
+int login(login_txt_ player){
+    FILE* f= fopen("data/players.bin","rb");
+    if(!f) {printf("Erreur ouverture fichier\n"); exit(0);}
+    login_txt_ user;
+    while(!feof(f)){
+        fread(&user,sizeof(user),1,f);
+        if(strcmp(user.id,player.id)==0 && strcmp(user.passwd,player.passwd)==0) return 1;
+    }
+    fclose(f);
+    return 0;
+}
+
+
+
+char* generationMot(int nblettres,FILE* f, char*mot){
+    int j,nblignes=0,i=0;
+    char c;
+    srand(time(NULL)*100);
+    while((c = fgetc(f)) != EOF) {if(c == '\n') nblignes++;}
+    fseek(f, 0L, SEEK_SET);
+    j = rand() % nblignes + 1;
+    do{
+        fscanf(f,"%s",mot);
+        i++;
+    }while(i != j);
+    return mot;
+}
+//saisi d'un mot/ la saisis n'est acceptée que si le mot saisi est de longueur nblettres
+char* saisirMot(int nblettres,char* saisi){
+    int i=0;
+    char c;
+    fflush(stdin);
+    while(i < nblettres){
+        if(isalpha(c=getchar())){
+            saisi[i]=c; i++;
+        }
+    }
+    saisi[i]='\0';
+    for(int i=0;i<strlen(saisi);i++) saisi[i]=toupper(saisi[i]);
+    return saisi;
+}
+//tester si le mot existe dans le dictionnaire
+int motFrancais(char *mot, FILE* f,int nblettres){
+    char c;
+    int i;
+    fseek(f,0L,SEEK_SET);
+    while(f){
+        char test[nblettres+1];
+        i=0;
+        while((c=fgetc(f) )!= '\n') {test[i]=c;i++;}
+        test[i]='\0';
+        if(strcmp(test,mot)==0) {printf("appartient au dictionnaire\n");return 1;}
+    }
+    printf("n'appartient pas\n");
+    return -1;
+}
+//test sur les lettres: bien pacée, mal placée....
+void verification(char *mot,char *saisi){
+    for(int i=0; i<strlen( mot);i++){
+        for(int j=0; j<strlen(mot);j++ ){
+            if(mot[j]==saisi[i]){
+                if(i==j) printf("%c lettre bien placée \n",saisi[i]); //carrérouge
+                else printf(" %c lettre mal placée\n",saisi[i]);//cerclejaune
+            } 
+        }
+    }
+}
+//choix du fichier selon la longueur du mot
+FILE* ouvertureFichier(int nblettres){
+    FILE* f=NULL;
+    switch(nblettres){
+        case NBR_L_6 : f=fopen("6letters.txt","r");break;
+        case NBR_L_7 : f=fopen("7letters.txt","r");break;
+        case NBR_L_8 : f=fopen("8letters.txt","r");break;
+        case NBR_L_9 : f=fopen("9letters.txt","r");break;
+        case NBR_L_10 : f=fopen("10letters.txt","r");break;
+    }
+    if(!f) {printf("erreur ouverture du fichier");exit(-1);}
+    return f;
+}
+//déroulement de la partie
+void PARTIE(int temps, int nblettres){
+    game_options_ game_options;
+    game_options.nbr_letters=nblettres;game_options.nbr_time=temps;game_options.score=0;
+    char* motATrouver,*motSaisi;
+    motATrouver=(char*)malloc(sizeof(char)*(nblettres+1));
+    motSaisi=(char*)malloc(sizeof(char)*(nblettres+1));
+    FILE* f=ouvertureFichier(nblettres);
+    generationMot(nblettres,f,motATrouver);
+    printf("%s\n", motATrouver);
+    motSaisi=saisirMot(nblettres,motSaisi);
+    if(motFrancais(motSaisi,f,nblettres)==1){ verification(motATrouver,motSaisi);}
+}
+//////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+void play_game(SDL_Renderer *renderer,int letters,int time,user_ user){
+    // temp :
+    render_empty_grid9(renderer);
+    player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
+    render_linge9(renderer,linge9_1,LN_1);
+    render_linge_text9(renderer,linge9_1,LN_1);
+
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////:
+
+
+void render_time(SDL_Renderer* renderer){
+    
+
+    int i = game_options.nbr_time;
+    char str[10];
+    sprintf(str, "%d", i);
+    // Now str contains the integer as characters
+
+    TTF_Init();
+    TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 42);
+    SDL_Rect dest;
+    dest.x = 705; dest.y = 57;
+    SDL_Surface * surface = TTF_RenderText_Blended(font, str, white);
+    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_QueryTexture(texture, NULL, NULL, &dest.w, &dest.h);
+    SDL_RenderCopy(renderer, texture, NULL, &dest);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    TTF_CloseFont(font);
+    TTF_Quit();
+
+}
+
+void render_score(SDL_Renderer* renderer){
+    
+
+    int i = user.score;
+    char str[10];
+    sprintf(str, "%d", i);
+    // Now str contains the integer as characters
+
+    TTF_Init();
+    TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 32);
+    SDL_Rect dest;
+    dest.x = 690; dest.y = 535;
+    SDL_Surface * surface = TTF_RenderText_Blended(font, str, white);
+    SDL_Texture * texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_QueryTexture(texture, NULL, NULL, &dest.w, &dest.h);
+    SDL_RenderCopy(renderer, texture, NULL, &dest);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+    TTF_CloseFont(font);
+    TTF_Quit();
+
+}
+
+
+
+
+
+
+
+
+void render_options(SDL_Renderer* renderer){
+    switch(game_options.nbr_letters){
+        case NBR_L_6 :
+            render_empty_grid6(renderer);
+            break;
+        case NBR_L_7 :
+            render_empty_grid7(renderer);
+            break;
+        case NBR_L_8 :
+            render_empty_grid8(renderer);
+            break;
+        case NBR_L_9 :
+            render_empty_grid9(renderer);
+            break;
+        case NBR_L_10 :
+            render_empty_grid10(renderer);
+            break;
+    }
+
+        render_time(renderer);
+        render_score(renderer);
+
+}
 
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -688,10 +899,9 @@ void render_empty_grid10(SDL_Renderer *renderer){
 void menu_loop(SDL_Renderer *renderer){
 
 
-
      //loop
     SDL_Event event;
-    while(running)
+    while(running && game.state==MENU_STATE)
     {
         // Process events
         while(SDL_PollEvent(&event))
@@ -721,20 +931,13 @@ void menu_loop(SDL_Renderer *renderer){
             case NOT_SELECTED:
                 menu.hover = render_menu(renderer); break;
             case LOGIN_SELECTED:
-
                 render_login(renderer);
-                
-            
                  break;
             case SINGUP_SELECTED :
                 render_singup(renderer);
                 break;  
             case PLAY_AS_GUEST_SELECTED:
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
-                         "WARNING",
-                         "Your Progress wont be saved :(",
-                         NULL);
-                menu.select=NOT_SELECTED; // temp
+                render_play_as_gest(renderer);
                 break;
             case TOP_PLAYERS_SELECTED:
                 render_top_players(renderer);
@@ -755,11 +958,12 @@ void menu_loop(SDL_Renderer *renderer){
 
 // game state loop ; 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void game_loop(SDL_Renderer *renderer){
 
      //loop
     SDL_Event event;
-    while(running)
+    while(running && game.state==PLAYING_STATE )
     {
         // Process events
         while(SDL_PollEvent(&event))
@@ -783,13 +987,97 @@ void game_loop(SDL_Renderer *renderer){
 
        
 
-        }
-    SDL_RenderClear(renderer);
-    // cases: 
+       
+        SDL_RenderClear(renderer);
+    switch(game_options.select) {
+            case NOT_SELECTED:
+               // render_game_menu(renderer);
+                break;
+            case START_SELECTED:
+                    // start the game
+                 break;
+            case RESET_SELECTED :
+                    // reset
+                break;  
+            case LOGOUT_SELECTED:
+                game.state=MENU_STATE;
+                game_options.select=NOT_SELECTED;
+                game_options.hover=0;
+                break;
+            case NBR_6_SELECTED :
+                game_options.nbr_letters=NBR_L_6;
+                break;
+            case NBR_7_SELECTED :
+                game_options.nbr_letters=NBR_L_7;
+                break;
+            case NBR_8_SELECTED :
+                game_options.nbr_letters=NBR_L_8;
+                break;
+            case NBR_9_SELECTED :
+                game_options.nbr_letters=NBR_L_9;
+                break;
+            case NBR_10_SELECTED :
+                game_options.nbr_letters=NBR_L_10;
+                break;
 
+            case TIME_10_SELECTED :
+                game_options.nbr_time=TIME_L_10;
+                break;
+            case TIME_15_SELECTED :
+                game_options.nbr_time=TIME_L_15;
+                break;
+            case TIME_20_SELECTED :
+                game_options.nbr_time=TIME_L_20;
+                break;
+
+
+}
+                 }
+
+        
     render_game_menu(renderer);
+    render_options(renderer);
+    SDL_RenderPresent(renderer);
 
 
-    SDL_RenderPresent(renderer); 
+
     }
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
+//////////////////////////////////////////////////////////////://////////////////////////////////////////////////////////////:
+void main_loop(SDL_Renderer *renderer){
+    
+    SDL_Event event;
+    while(running)
+    {
+        // Process events
+        while(SDL_PollEvent(&event))
+        {
+         
+
+        switch(event.type){
+            case SDL_QUIT:
+                running = false; break;
+}
+}
+
+
+
+        SDL_RenderClear(renderer);
+        switch (game.state){
+            case MENU_STATE : 
+                menu_loop(renderer);
+                break;
+            case PLAYING_STATE :
+                game_loop(renderer);
+                break;
+        }  
+        SDL_RenderPresent(renderer); 
+}
 }

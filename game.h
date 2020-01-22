@@ -28,15 +28,14 @@
 #define TIME_20_SELECTED 13
 
 //game states : 
-#define MENU_STATE 0
-#define PLAYING_STATE 1
-#define GAME_OVER_STATE 2
-#define CHECKING_STATE 3
-#define QUIT_STATE 4
+#define MENU_STATE 0 // 1st menu
+#define PLAYING_PARAMETERS_STATE 1 // befor Start botton
+#define PLAYING_STATE 2 // player is playing the game with the parameters he wants :
+#define CHECKING_STATE 3 // checking the input and changing 
+#define DONNE_STATE 4 // game is donne the playing state will start
 
 
 // nbrs of menu :
-#define NBR_NO_SELECT 0
 #define NBR_L_6 6 
 #define NBR_L_7 7
 #define NBR_L_8 8
@@ -44,9 +43,9 @@
 #define NBR_L_10 10
 
 //nbrs of time : 
-#define TIME_L_10 1
-#define TIME_L_15 2
-#define TIME_L_20 3
+#define TIME_L_10 10
+#define TIME_L_15 15
+#define TIME_L_20 20
 
 // box rundring state :
 #define BOX_R_BLACK 1
@@ -123,12 +122,14 @@ typedef struct {
 typedef struct {
 	char id[25];
 	char passwd[25];
+	int score;
 }login_txt_;
 
 //sing up input
 typedef struct {
 	char id[25];
 	char passwd[25];
+	int score;
 } singup_txt_;
 
 

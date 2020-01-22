@@ -11,28 +11,35 @@
 #include "menu-items.h"
 
 // variables needed ; 
+// game state :
+user_ me;
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
+    
+
     // Initialize SDL
     SDL_Init(SDL_INIT_VIDEO);
 
     // Create a SDL window
-    SDL_Window *window = SDL_CreateWindow("Motus V1.0", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow("Motus V1.0", SDL_WINDOWPOS_UNDEFINED, 
+                                            SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, 
+                                            SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
 
     // Create a renderer (accelerated and in sync with the display refresh rate)
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);     // Initialize support for loading PNG and JPEG images
 
-    // menu loop :
-    
+    // main loop :
 
     /////////////////////////////////////////////////////////::
-    //menu_loop(renderer);
     ////////////////////////////////////////////////////////
-    game_loop(renderer);
+    
+    main_loop(renderer);
 
+    //game_loop(renderer);
+
+    //menu_loop(renderer);
 
     SDL_Delay(1000/30); // 30fps
     SDL_FlushEvent(SDL_KEYDOWN);
