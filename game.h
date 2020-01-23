@@ -216,6 +216,9 @@ typedef struct {
 	linge6_ linge5;
 	linge6_ linge6;
 	linge6_ linge7;
+	int* h_pos; // what line are we playing in
+	int reds_chow[6]; // reviled letters will be saved here
+	int reds_box[6]; // the reviled boxes BG here
 } data_grid6_;
 
 
@@ -227,6 +230,10 @@ typedef struct {
 	linge7_ linge5;
 	linge7_ linge6;
 	linge7_ linge7;
+	int h_pos; // what line are we playing in
+	int reds_chow[7]; // reviled letters will be saved here
+	int reds_box[7]; // the reviled boxes BG here
+
 } data_grid7_;
 
 typedef struct {
@@ -237,6 +244,9 @@ typedef struct {
 	linge8_ linge5;
 	linge8_ linge6;
 	linge8_ linge7;
+	int h_pos; // what line are we playing in
+	int reds_chow[8]; // reviled letters will be saved here
+	int reds_box[8]; // the reviled boxes BG here
 } data_grid8_;
 
 typedef struct {
@@ -247,6 +257,9 @@ typedef struct {
 	linge9_ linge5;
 	linge9_ linge6;
 	linge9_ linge7;
+	int h_pos; // what line are we playing in
+	int reds_chow[9]; // reviled letters will be saved here
+	int reds_box[9]; // the reviled boxes BG here
 } data_grid9_;
 
 typedef struct {
@@ -257,6 +270,9 @@ typedef struct {
 	linge10_ linge5;
 	linge10_ linge6;
 	linge10_ linge7;
+	int h_pos; // what line are we playing in
+	int reds_chow[10]; // reviled letters will be saved here
+	int reds_box[10]; // the reviled boxes BG here
 } data_grid10_;
 
 

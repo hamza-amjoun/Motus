@@ -27,6 +27,7 @@ char hide[25];
 int input_state = 1;
 
 
+
 // struct menu initialisation
 menu_ menu = {.select=0,.hover = 0,.input_state = 1};
 
@@ -68,12 +69,15 @@ linge10_ empty_linge10 ={ .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box
 const SDL_Color white = { .r = 255, .g = 255, .b = 255};
 const SDL_Color black = { .r = 0, .g = 0, .b = 0};
 
-data_grid6_ data_grid6;
-data_grid7_ data_grid7;
-data_grid8_ data_grid8;
-data_grid9_ data_grid9;
-data_grid10_ data_grid10;
+data_grid6_ data_grid6 = {.h_pos=1,};
+data_grid7_ data_grid7 = {.h_pos=1,};
+data_grid8_ data_grid8 = {.h_pos=1,};
+data_grid9_ data_grid9 = {.h_pos=1,};
+data_grid10_ data_grid10 = { .h_pos=1,};
 
+
+int pass=1;
+int prev=0;
 
 
                                                                 /////////////////////////////:
@@ -139,22 +143,33 @@ char* saisirMot(int nblettres,char* saisi){
 //tester si le mot existe dans le dictionnaire
 
 //test sur les lettres: bien pacée, mal placée....
+
+int correct(char *mot,char *saisi){
+    if(strcmp(mot,saisi)==0) return 1;
+    return 0;
+}
+//test sur les lettres: bien pacée, mal placée....
 void verification(char *mot,char *saisi,int* box){
-    for(int i=0; i<strlen( mot);i++){
-        for(int j=0; j<strlen(mot);j++ ){
-            if(mot[j]==saisi[i]){
-                if(i==j) {
-                    printf("%c lettre bien placée \n",saisi[i]);
-                    box[i]=BOX_R_RED;
-                    } //carrérouge
-                else {
-                    printf(" %c lettre mal placée\n",saisi[i]);
-                    box[i]=BOX_R_YELLOW;
-                }//cerclejaune
+    int taille=strlen(mot),tab[taille];
+    for(int i=0;i<taille;i++) tab[i]=-1;
+    for(int i=0; i<taille;i++){
+        for(int j=0; j<taille;j++ ){
+            if(mot[i]==saisi[j]){
+                if(i==j) tab[j]=1;
+                else if(tab[j]!=1) tab[j]=0;
             } 
         }
     }
+    for (int i = 0; i < taille; i++)
+    {
+        switch(tab[i]){
+            case -1: box[i]=BOX_R_BLEU; printf("%c n'existe pas\n",saisi[i]);break;
+            case 0: box[i]=BOX_R_YELLOW;printf("%c mal\n",saisi[i]);break;
+            case 1: box[i]=BOX_R_RED; printf("%c bien\n",saisi[i]);break;
+        }
+    }
 }
+
 //choix du fichier selon la longueur du mot
 FILE* ouvertureFichier(int nblettres){
     FILE* f=NULL;
@@ -176,16 +191,16 @@ int motFrancais(char *mot,int nblettres){
     char c;
     int i;
     fseek(f,0L,SEEK_SET);
-    while(f){
+    while(!feof(f)){
         char test[nblettres+1];
         i=0;
-        while((c=fgetc(f) )!= '\n') {test[i]=c;i++;}
+        while((c=fgetc(f) )!= '\n' && !feof(f)) {test[i]=c;i++;}
         test[i]='\0';
-        if(strcmp(test,mot)==0) {printf("appartient au dictionnaire\n");return 1;}
+        if(strcmp(test,mot)==0){ printf("appartient au dictionnaire\n"); return 1;}
     }
-    fclose(f);
     printf("n'appartient pas\n");
-    return -1;
+    return 0;
+
 }
 //déroulement de la partie
 
@@ -439,16 +454,6 @@ void render_game_menu(SDL_Renderer *renderer){
 
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
-
-
-
-    //play_game(renderer,6,20,user);
-    //render_empty_grid9(renderer);
-    //player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
-    //render_linge9(renderer,linge9_1,LN_1);
-    //render_linge_text9(renderer,linge9_1,LN_1);
-
-
     
     // bottons hover effect : /////////////////////////////////////////////////////////
     if (mouse_x > 445 && mouse_x < 445 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
@@ -523,7 +528,7 @@ void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
 // render box text : 
 void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
     switch (boxCH){
-        case A:
+        case A: 
             render_on_xy(A_R,renderer,x,y);break;
         case B:
             render_on_xy(B_R,renderer,x,y);break;
@@ -636,9 +641,9 @@ void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
             render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
 ////////////////////////////////////////////////////////////////////////////////////
-void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose){
+int player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters){
 
-SDL_Event event;  //SDL_Event event;
+                SDL_Event event;  //SDL_Event event;
                  while(SDL_PollEvent(&event)){
                     switch (event.type){
                         case SDL_QUIT:
@@ -653,67 +658,51 @@ SDL_Event event;  //SDL_Event event;
                                 case SDL_SCANCODE_BACKSPACE: // del last element :
                                     text[i-1]=0;chow[i-1]=0;box[i-1]=BOX_R_BLACK; i--; break;
                                  case SDL_SCANCODE_RETURN:
-                                    if (i==6){
-                                    if(motFrancais(text,6)==1){ verification(playing_data6.generated,text,box);}
+                                    if (i==nbr_letters){
+                                        if(motFrancais(text,nbr_letters)==1){
+                                            if(correct(text,playing_data6.generated,)==1){
+                                                // won state
+                                                //score ++
+                                            }
+                                            verification(playing_data6.generated,text,box);
+
+                                        }
+                                    pass++;// move to next linge
+                                    i=0;
+                                    prev=0;
                                     }
                                     break;
-                                case SDL_SCANCODE_Q:
-                                    text[i]='A'; chow[i]=A;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_W:
-                                    text[i]='Z'; chow[i]=Z;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_E:
-                                    text[i]='E'; chow[i]=E;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_R:
-                                    text[i]='R'; chow[i]=R;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_T:
-                                    text[i]='T'; chow[i]=T;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_Y:
-                                    text[i]='Y'; chow[i]=Y;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_U:
-                                    text[i]='U'; chow[i]=U;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_I:
-                                    text[i]='I'; chow[i]=I;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_O:
-                                    text[i]='O'; chow[i]=O;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_P:
-                                    text[i]='P'; chow[i]=P;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_A:
-                                    text[i]='Q'; chow[i]=Q;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_S:
-                                    text[i]='S'; chow[i]=S;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_D:
-                                    text[i]='D'; chow[i]=D;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_F:
-                                    text[i]='F'; chow[i]=F;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_G:
-                                    text[i]='G'; chow[i]=G;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_H:
-                                    text[i]='H'; chow[i]=H;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_J:
-                                    text[i]='J'; chow[i]=J;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_K:
-                                    text[i]='K'; chow[i]=K;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_L:
-                                    text[i]='L'; chow[i]=L;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_SEMICOLON:
-                                    text[i]='M'; chow[i]=M;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_Z:
-                                    text[i]='W'; chow[i]=W;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_X:
-                                    text[i]='X'; chow[i]=X;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_C:
-                                    text[i]='C'; chow[i]=C;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_V:
-                                    text[i]='V'; chow[i]=V;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_B:
-                                    text[i]='B'; chow[i]=B;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_N:
-                                    text[i]='N'; chow[i]=N;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_Q: text[i]='A'; chow[i]=A;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_W: text[i]='Z'; chow[i]=Z;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_E: text[i]='E'; chow[i]=E;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_R: text[i]='R'; chow[i]=R;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_T: text[i]='T'; chow[i]=T;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_Y: text[i]='Y'; chow[i]=Y;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_U: text[i]='U'; chow[i]=U;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_I: text[i]='I'; chow[i]=I;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_O: text[i]='O'; chow[i]=O;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_P: text[i]='P'; chow[i]=P;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_A: text[i]='Q'; chow[i]=Q;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_S: text[i]='S'; chow[i]=S;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_D: text[i]='D'; chow[i]=D;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_F: text[i]='F'; chow[i]=F;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_G: text[i]='G'; chow[i]=G;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_H: text[i]='H'; chow[i]=H;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_J: text[i]='J'; chow[i]=J;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_K: text[i]='K'; chow[i]=K;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_L: text[i]='L'; chow[i]=L;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_SEMICOLON: text[i]='M'; chow[i]=M;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_Z: text[i]='W'; chow[i]=W;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_X: text[i]='X'; chow[i]=X;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_C: text[i]='C'; chow[i]=C;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_V: text[i]='V'; chow[i]=V;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_B: text[i]='B'; chow[i]=B;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_N: text[i]='N'; chow[i]=N;box[i]=BOX_R_BLEU; i++; break;
             }
         }
     }
 
-
+return pass;
 }
 
 
@@ -887,6 +876,169 @@ void render_data10(SDL_Renderer* renderer){
     render_linge10(renderer,data_grid10.linge6,6);render_linge_text10(renderer,data_grid10.linge6,6);
     render_linge10(renderer,data_grid10.linge7,7);render_linge_text10(renderer,data_grid10.linge7,7);
 }
+
+
+void input_data6(SDL_Renderer* renderer){
+    switch(pass){
+        case 1 :
+                if(prev==0){
+                data_grid6.linge1.box[1]=BOX_R_RED;
+                data_grid6.linge1.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge1.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge1.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+               prev=1;
+           }
+            pass = player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box,6);
+            break;
+        case 2 :
+            if(prev==0){
+                data_grid6.linge2.box[1]=BOX_R_RED;
+                data_grid6.linge2.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge2.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge2.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge1.box[0]==BOX_R_RED){
+                    data_grid6.linge2.box[0]=BOX_R_RED;data_grid6.linge2.chow[0]=data_grid6.linge1.chow[0];}
+                if(data_grid6.linge1.box[1]==BOX_R_RED){
+                    data_grid6.linge2.box[1]=BOX_R_RED;data_grid6.linge2.chow[1]=data_grid6.linge1.chow[1];}
+                if(data_grid6.linge1.box[2]==BOX_R_RED){
+                    data_grid6.linge2.box[2]=BOX_R_RED;data_grid6.linge2.chow[2]=data_grid6.linge1.chow[2];}
+                if(data_grid6.linge1.box[3]==BOX_R_RED){
+                    data_grid6.linge2.box[3]=BOX_R_RED;data_grid6.linge2.chow[3]=data_grid6.linge1.chow[3];}
+                if(data_grid6.linge1.box[4]==BOX_R_RED){
+                    data_grid6.linge2.box[4]=BOX_R_RED;data_grid6.linge2.chow[4]=data_grid6.linge1.chow[4];}
+                if(data_grid6.linge1.box[5]==BOX_R_RED){
+                    data_grid6.linge2.box[5]=BOX_R_RED;data_grid6.linge2.chow[5]=data_grid6.linge1.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge2.text,data_grid6.linge2.chow,data_grid6.linge2.box,6);
+            break;
+        case 3 :
+            if(prev==0){
+                data_grid6.linge3.box[1]=BOX_R_RED;
+                data_grid6.linge3.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge3.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge3.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge2.box[0]==BOX_R_RED){
+                    data_grid6.linge3.box[0]=BOX_R_RED;data_grid6.linge3.chow[0]=data_grid6.linge2.chow[0];}
+                if(data_grid6.linge2.box[1]==BOX_R_RED){
+                    data_grid6.linge3.box[1]=BOX_R_RED;data_grid6.linge3.chow[1]=data_grid6.linge2.chow[1];}
+                if(data_grid6.linge2.box[2]==BOX_R_RED){
+                    data_grid6.linge3.box[2]=BOX_R_RED;data_grid6.linge3.chow[2]=data_grid6.linge2.chow[2];}
+                if(data_grid6.linge2.box[3]==BOX_R_RED){
+                    data_grid6.linge3.box[3]=BOX_R_RED;data_grid6.linge3.chow[3]=data_grid6.linge2.chow[3];}
+                if(data_grid6.linge2.box[4]==BOX_R_RED){
+                    data_grid6.linge3.box[4]=BOX_R_RED;data_grid6.linge3.chow[4]=data_grid6.linge2.chow[4];}
+                if(data_grid6.linge2.box[5]==BOX_R_RED){
+                    data_grid6.linge3.box[5]=BOX_R_RED;data_grid6.linge3.chow[5]=data_grid6.linge2.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge3.text,data_grid6.linge3.chow,data_grid6.linge3.box,6);
+            break;
+        case 4 :
+            if(prev==0){
+                data_grid6.linge4.box[1]=BOX_R_RED;
+                data_grid6.linge4.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge4.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge4.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge3.box[0]==BOX_R_RED){
+                    data_grid6.linge4.box[0]=BOX_R_RED;data_grid6.linge4.chow[0]=data_grid6.linge3.chow[0];}
+                if(data_grid6.linge3.box[1]==BOX_R_RED){
+                    data_grid6.linge4.box[1]=BOX_R_RED;data_grid6.linge4.chow[1]=data_grid6.linge3.chow[1];}
+                if(data_grid6.linge3.box[2]==BOX_R_RED){
+                    data_grid6.linge4.box[2]=BOX_R_RED;data_grid6.linge4.chow[2]=data_grid6.linge3.chow[2];}
+                if(data_grid6.linge3.box[3]==BOX_R_RED){
+                    data_grid6.linge4.box[3]=BOX_R_RED;data_grid6.linge4.chow[3]=data_grid6.linge3.chow[3];}
+                if(data_grid6.linge3.box[4]==BOX_R_RED){
+                    data_grid6.linge4.box[4]=BOX_R_RED;data_grid6.linge4.chow[4]=data_grid6.linge3.chow[4];}
+                if(data_grid6.linge3.box[5]==BOX_R_RED){
+                    data_grid6.linge4.box[5]=BOX_R_RED;data_grid6.linge4.chow[5]=data_grid6.linge3.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge4.text,data_grid6.linge4.chow,data_grid6.linge4.box,6);
+            break;
+        case 5 :
+            if(prev==0){
+                data_grid6.linge5.box[1]=BOX_R_RED;
+                data_grid6.linge5.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge5.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge5.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge4.box[0]==BOX_R_RED){
+                    data_grid6.linge5.box[0]=BOX_R_RED;data_grid6.linge5.chow[0]=data_grid6.linge4.chow[0];}
+                if(data_grid6.linge4.box[1]==BOX_R_RED){
+                    data_grid6.linge5.box[1]=BOX_R_RED;data_grid6.linge5.chow[1]=data_grid6.linge4.chow[1];}
+                if(data_grid6.linge4.box[2]==BOX_R_RED){
+                    data_grid6.linge5.box[2]=BOX_R_RED;data_grid6.linge5.chow[2]=data_grid6.linge4.chow[2];}
+                if(data_grid6.linge4.box[3]==BOX_R_RED){
+                    data_grid6.linge5.box[3]=BOX_R_RED;data_grid6.linge5.chow[3]=data_grid6.linge4.chow[3];}
+                if(data_grid6.linge4.box[4]==BOX_R_RED){
+                    data_grid6.linge5.box[4]=BOX_R_RED;data_grid6.linge5.chow[4]=data_grid6.linge4.chow[4];}
+                if(data_grid6.linge4.box[5]==BOX_R_RED){
+                    data_grid6.linge5.box[5]=BOX_R_RED;data_grid6.linge5.chow[5]=data_grid6.linge4.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge5.text,data_grid6.linge5.chow,data_grid6.linge5.box,6);
+            break;
+        case 6 :
+            if(prev==0){
+                data_grid6.linge6.box[1]=BOX_R_RED;
+                data_grid6.linge6.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge6.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge6.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge5.box[0]==BOX_R_RED){
+                    data_grid6.linge6.box[0]=BOX_R_RED;data_grid6.linge6.chow[0]=data_grid6.linge5.chow[0];}
+                if(data_grid6.linge5.box[1]==BOX_R_RED){
+                    data_grid6.linge6.box[1]=BOX_R_RED;data_grid6.linge6.chow[1]=data_grid6.linge5.chow[1];}
+                if(data_grid6.linge5.box[2]==BOX_R_RED){
+                    data_grid6.linge6.box[2]=BOX_R_RED;data_grid6.linge6.chow[2]=data_grid6.linge5.chow[2];}
+                if(data_grid6.linge5.box[3]==BOX_R_RED){
+                    data_grid6.linge6.box[3]=BOX_R_RED;data_grid6.linge6.chow[3]=data_grid6.linge5.chow[3];}
+                if(data_grid6.linge5.box[4]==BOX_R_RED){
+                    data_grid6.linge6.box[4]=BOX_R_RED;data_grid6.linge6.chow[4]=data_grid6.linge5.chow[4];}
+                if(data_grid6.linge5.box[5]==BOX_R_RED){
+                    data_grid6.linge6.box[5]=BOX_R_RED;data_grid6.linge6.chow[5]=data_grid6.linge5.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge6.text,data_grid6.linge6.chow,data_grid6.linge6.box,6);
+            break;
+        case 7 :
+            if(prev==0){
+                data_grid6.linge7.box[1]=BOX_R_RED;
+                data_grid6.linge7.chow[1]=txt_to_chow(playing_data6.generated,1);
+                data_grid6.linge7.box[NBR_L_6-2]=BOX_R_RED;
+                data_grid6.linge7.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                if(data_grid6.linge6.box[0]==BOX_R_RED){
+                    data_grid6.linge7.box[0]=BOX_R_RED;data_grid6.linge7.chow[0]=data_grid6.linge6.chow[0];}
+                if(data_grid6.linge6.box[1]==BOX_R_RED){
+                    data_grid6.linge7.box[1]=BOX_R_RED;data_grid6.linge7.chow[1]=data_grid6.linge6.chow[1];}
+                if(data_grid6.linge6.box[2]==BOX_R_RED){
+                    data_grid6.linge7.box[2]=BOX_R_RED;data_grid6.linge7.chow[2]=data_grid6.linge6.chow[2];}
+                if(data_grid6.linge6.box[3]==BOX_R_RED){
+                    data_grid6.linge7.box[3]=BOX_R_RED;data_grid6.linge7.chow[3]=data_grid6.linge6.chow[3];}
+                if(data_grid6.linge6.box[4]==BOX_R_RED){
+                    data_grid6.linge7.box[4]=BOX_R_RED;data_grid6.linge7.chow[4]=data_grid6.linge6.chow[4];}
+                if(data_grid6.linge6.box[5]==BOX_R_RED){
+                    data_grid6.linge7.box[5]=BOX_R_RED;data_grid6.linge7.chow[5]=data_grid6.linge6.chow[5];}
+                prev=1;
+            }
+            pass = player_input(renderer ,data_grid6.linge7.text,data_grid6.linge7.chow,data_grid6.linge7.box,6);
+            break;
+        case 8 :
+            // loser
+            //reset
+            break;
+
+    
+    }
+}
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////
 
 
@@ -928,26 +1080,16 @@ void playing_loop(SDL_Renderer *renderer){
                         //
                         break;
                     }
-}
-
-       
+}       
         }
 
         SDL_RenderClear(renderer);
         render_game_menu(renderer);
         switch(game_options.nbr_letters){
                 case NBR_L_6 :
-                        render_empty_grid6(renderer);
-
-                        //FILE* f=ouvertureFichier(NBR_L_6);
-                        //generationMot(f,playing_data6.generated);
-                        //printf("%s\n", playing_data6.generated); //temp
-
-                        player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box, 1);
-                        render_data6(renderer);
-                        render_linge_text6(renderer,data_grid6.linge1,LN_1);
-                        //fclose(f);
-                        
+                    render_empty_grid6(renderer);
+                    input_data6(renderer);
+                    render_data6(renderer);
                         break;
         
           // Show what was drawn
@@ -1154,6 +1296,7 @@ void game_loop(SDL_Renderer *renderer){
             case START_SELECTED:
                     game_options.select=NOT_SELECTED;
                     game.state=PLAYING_STATE;
+                    pass=1;
                  break;
             case RESET_SELECTED :
                     // reset
@@ -1169,10 +1312,6 @@ void game_loop(SDL_Renderer *renderer){
                 FILE* f6=ouvertureFichier(NBR_L_6);
                 generationMot(f6,playing_data6.generated);
                 printf("%s\n", playing_data6.generated);
-                data_grid6.linge1.box[1]=BOX_R_RED;
-                data_grid6.linge1.chow[1]=txt_to_chow(playing_data6.generated,1);
-                data_grid6.linge1.box[NBR_L_6-2]=BOX_R_RED;
-                data_grid6.linge1.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
                 fclose(f6);
                 break;
             case NBR_7_SELECTED :

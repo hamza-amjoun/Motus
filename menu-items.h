@@ -40,7 +40,7 @@ void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
 
 void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y);
 
-void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box, int h_pose);
+int player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters);
 
 void render_empty_grid6(SDL_Renderer *renderer);
 void render_empty_grid7(SDL_Renderer *renderer);

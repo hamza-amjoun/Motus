@@ -33,13 +33,10 @@ int main(int argc, char **argv){
     // main loop :
 
     /////////////////////////////////////////////////////////::
+    main_loop(renderer);
     ////////////////////////////////////////////////////////
     
-    main_loop(renderer);
-
-    //game_loop(renderer);
-
-    //menu_loop(renderer);
+    
 
     SDL_Delay(1000/30); // 30fps
     SDL_FlushEvent(SDL_KEYDOWN);
