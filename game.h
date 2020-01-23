@@ -56,32 +56,32 @@
 
 // boxes letters enums :
 
-#define A 97
-#define B 98
-#define C 99
-#define D 100
-#define E 101
-#define F 102
-#define G 103
-#define H 104
-#define I 105
-#define J 106
-#define K 107
-#define L 108
-#define M 109
-#define N 110
-#define O 111
-#define P 112
-#define Q 113
-#define R 114
-#define S 115
-#define T 116
-#define U 117
-#define V 118
-#define W 119
-#define X 120
-#define Y 121
-#define Z 122
+#define A 41
+#define B 42
+#define C 43
+#define D 44
+#define E 45
+#define F 46
+#define G 47
+#define H 48
+#define I 49
+#define J 50
+#define K 51
+#define L 52
+#define M 53
+#define N 54
+#define O 55
+#define P 56
+#define Q 57
+#define R 58
+#define S 59
+#define T 60
+#define U 61
+#define V 62
+#define W 63
+#define X 64
+#define Y 65
+#define Z 66
 
 //////////////////////////////////////////////////////////////////////////:::::://::::
 // structs:
@@ -186,6 +186,25 @@ typedef struct {
 	int chow[10];
 }linge10_;
 
+typedef struct {
+	char generated[6];
+}playing_data6_;
+
+typedef struct {
+	char generated[7];
+}playing_data7_;
+
+typedef struct {
+	char generated[8];
+}playing_data8_;
+
+typedef struct {
+	char generated[9];
+}playing_data9_;
+
+typedef struct {
+	char generated[10];
+}playing_data10_;
 
 
 // all data of all lings : we have to show them all xd
@@ -239,7 +258,6 @@ typedef struct {
 	linge10_ linge6;
 	linge10_ linge7;
 } data_grid10_;
-
 
 
 #endif  // GAME_H_

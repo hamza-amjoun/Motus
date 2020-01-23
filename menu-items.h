@@ -10,7 +10,7 @@ void game_loop(SDL_Renderer *renderer);
 void main_loop(SDL_Renderer *renderer);
 
 
-void play_game(SDL_Renderer *renderer,int letters,int time,user_ user);
+void play_game(SDL_Renderer *renderer);
 
 
 void reset_input();
