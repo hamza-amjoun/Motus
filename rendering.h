@@ -9,6 +9,8 @@
 #define TOP_PLAYERS_BG "res/top_players_bg.png"
 #define HOW_TO_BG "res/how_to_play_bg.png"
 #define GAME_BG "res/Motus_bg.png"
+#define WON_BG "res/won_bg.png"
+#define LOSE_BG "res/loser_bg.png"
 
 // pics of nbr choises
 #define NBR_6 "res/nbr_6.png" 
@@ -99,6 +101,22 @@ void render_singup(SDL_Renderer *renderer);
 void render_text_on_xy(SDL_Renderer* renderer,const char* text,int x,int y,SDL_Color color);
 
 void render_text_on_box(SDL_Renderer* renderer,const char* text, int x,int y,SDL_Color color);
+
+
+void render_linge_text6(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+void render_linge_text7(SDL_Renderer *renderer,linge7_ linge,int h_pose);
+void render_linge_text8(SDL_Renderer *renderer,linge8_ linge,int h_pose);
+void render_linge_text9(SDL_Renderer *renderer,linge9_ linge,int h_pose);
+void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
+
+// rendering lines :
+void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose);
+void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose);
+void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose);
+void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose);
+void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
+
+int txt_to_chow(char* text,int indice);
 
 
 #endif  // RENDERING_H_

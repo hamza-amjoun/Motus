@@ -31,8 +31,7 @@
 #define MENU_STATE 0 // 1st menu
 #define PLAYING_PARAMETERS_STATE 1 // befor Start botton
 #define PLAYING_STATE 2 // player is playing the game with the parameters he wants :
-#define CHECKING_STATE 3 // checking the input and changing 
-#define DONNE_STATE 4 // game is donne the playing state will start
+#define GAME_OVER_STATE 3 // game is donne the playing state will start
 
 
 // nbrs of menu :
@@ -110,13 +109,6 @@ typedef struct{
 	int score;
 }game_options_;
 
-
-// user :
-typedef struct {
-	char id[25];
-	char passwd[25];
-	int score;
-}user_;
 
 //login input from user
 typedef struct {
@@ -275,5 +267,10 @@ typedef struct {
 	int reds_box[10]; // the reviled boxes BG here
 } data_grid10_;
 
+
+typedef struct{
+	char id[25];
+	int score;
+}topPlayer;
 
 #endif  // GAME_H_

@@ -12,13 +12,13 @@
 
 // variables needed ; 
 // game state :
-user_ me;
+
 
 int main(int argc, char **argv){
     
 
     // Initialize SDL
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
 
     // Create a SDL window
     SDL_Window *window = SDL_CreateWindow("Motus V1.0", SDL_WINDOWPOS_UNDEFINED, 
@@ -38,7 +38,7 @@ int main(int argc, char **argv){
     
     
 
-    SDL_Delay(1000/30); // 30fps
+    SDL_Delay(1000/60); // 30fps
     SDL_FlushEvent(SDL_KEYDOWN);
     SDL_FlushEvent(SDL_MOUSEBUTTONDOWN);
     SDL_FlushEvent(SDL_MOUSEMOTION);

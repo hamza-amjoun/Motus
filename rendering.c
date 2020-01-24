@@ -104,3 +104,153 @@ void render_text_on_box(SDL_Renderer* renderer,const char* text, int x,int y,SDL
 
 
 
+
+// linge text data chow :
+void render_linge_text6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+    int x=266,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose-1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose-1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose-1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose-1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose-1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose-1)*BOX);}
+
+void render_linge_text7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
+    int x=266-25,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge_text8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
+    int x=266-50,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge_text9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
+    int x=266-75,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
+    int x=266-100,y=160;
+    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);
+    render_box_text(renderer,linge.chow[9],x+9*BOX,y+(h_pose - 1)*BOX);}
+
+
+
+
+
+int txt_to_chow(char* text,int indice){
+    switch(text[indice]){
+        case 'A': return A; break;
+        case 'Z': return Z; break;
+        case 'E': return E; break;
+        case 'R': return R; break;
+        case 'T': return T; break;
+        case 'Y': return Y; break;
+        case 'U': return U; break;
+        case 'I': return I; break;
+        case 'O': return O; break;
+        case 'P': return P; break;
+        case 'Q': return Q; break;
+        case 'S': return S; break;
+        case 'D': return D; break;
+        case 'F': return F; break;
+        case 'G': return G; break;
+        case 'H': return H; break;
+        case 'J': return J; break;
+        case 'K': return K; break;
+        case 'L': return L; break;
+        case 'M': return M; break;
+        case 'W': return W; break;
+        case 'X': return X; break;
+        case 'C': return C; break;
+        case 'V': return V; break;
+        case 'B': return B; break;
+        case 'N': return N; break;
+    }
+}
+
+
+// render linge ;
+
+void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
+            int x=266,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
+            int x=266-25,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
+            int x=266-50,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
+            int x=266-75,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);}
+
+void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
+            int x=266-100,y=160;
+            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
+            render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
+////////////////////////////////////////////////////////////////////////////////////

@@ -26,8 +26,9 @@ char hide[25];
 
 int input_state = 1;
 
-
-
+int temps=20;
+int tempsActuel;
+int tempsPrecedent;
 // struct menu initialisation
 menu_ menu = {.select=0,.hover = 0,.input_state = 1};
 
@@ -37,27 +38,12 @@ playing_data8_ playing_data8;
 playing_data9_ playing_data9;
 playing_data10_ playing_data10;
 
-game_options_ game_options = { // defalt values 
-    .select=0,
-    .hover = 0,
-    .nbr_letters=0,
-    .nbr_time=20,
-
-};
-
+game_options_ game_options = {.select=0,.hover = 0,.nbr_letters=6,.nbr_time=20,};
 
 /// game state
 game_ game= {.state= MENU_STATE,};
-
-user_ user;
 // player data :
 singup_txt_ singup_player;
-
-
-// temp lings for testing:
-linge6_ linge6_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
-linge9_ linge9_1 = { .box[0]=1,.box[1]=2,.box[2]=3,.box[3]=4,.box[4]=1,.box[5]=3,};
-
 // empty linges data for rundring :
 linge6_ empty_linge6 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,};
 linge7_ empty_linge7 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1};
@@ -69,12 +55,16 @@ linge10_ empty_linge10 ={ .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box
 const SDL_Color white = { .r = 255, .g = 255, .b = 255};
 const SDL_Color black = { .r = 0, .g = 0, .b = 0};
 
-data_grid6_ data_grid6 = {.h_pos=1,};
-data_grid7_ data_grid7 = {.h_pos=1,};
-data_grid8_ data_grid8 = {.h_pos=1,};
-data_grid9_ data_grid9 = {.h_pos=1,};
-data_grid10_ data_grid10 = { .h_pos=1,};
-
+data_grid6_ data_grid6;
+data_grid6_ new6;
+data_grid7_ data_grid7;
+data_grid7_ new7;
+data_grid8_ data_grid8;
+data_grid8_ new8;
+data_grid9_ data_grid9;
+data_grid9_ new9;
+data_grid10_ data_grid10;
+data_grid10_ new10;
 
 int pass=1;
 int prev=0;
@@ -83,21 +73,112 @@ int prev=0;
                                                                 /////////////////////////////:
                                             ////////////////////
 ////////////////////////////////////////////                            ////////////////////////////
+
+
+void swap(topPlayer *a, topPlayer *b) 
+{ 
+    topPlayer temp;
+    strcpy(temp.id,a->id); temp.score=a->score;
+    strcpy(a->id,b->id); a->score=b->score;
+    strcpy(b->id,temp.id); b->score=temp.score;
+} 
+int empty(char* filename, char* mode){
+    FILE* f=fopen(filename,mode);
+    fseek(f,0L,SEEK_END);
+    int vide=(ftell(f)==0L);
+    fclose(f);
+    return vide;
+}
+int existe(login_txt_ player){
+    FILE* f=fopen("data/players.bin","rb");
+    login_txt_ user;
+    while(!feof(f)){
+        fread(&user,sizeof(user),1,f);
+        if(strcmp(user.id,player.id)==0) return 1;
+    }
+    fclose(f);
+    return 0;
+}
+
+
 int signup(singup_txt_ player){
+    int signup;
     FILE* f=fopen("data/players.bin","ab");
     if(!f) return 0;
-    fwrite(&player,sizeof(player),1,f);
+    if(empty("data/players.bin","ab+")==1){
+        player.score=0;
+        fwrite(&player,sizeof(player),1,f);
+        signup=1;
+    }
+    else{
+        login_txt_ user;
+        strcpy(user.id,player.id);strcpy(user.passwd,player.passwd);user.score=0;
+        if(existe(user)==0) {fwrite(&player,sizeof(player),1,f); signup=1;}
+        else {SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"Oops!!"," already exists , try another ID :(",NULL);signup=0;}//notification ;
+    }
     fclose(f);
-    return 1;
+    return signup;
 }
+
 
 int login(login_txt_ player){
     FILE* f= fopen("data/players.bin","rb");
     if(!f) {printf("Erreur ouverture fichier\n"); exit(0);}
+    return existe(player);
+}
+void topPlayers(login_txt_ player,int score){
+    FILE* f=fopen("data/topPlayers.txt","a+");
+    if(empty("data/topPlayers.txt","a+")==1){
+        fprintf(f,"%s %d\n",player.id,score);
+    }else{
+        fseek(f,0L,SEEK_SET);
+        topPlayer *top=(topPlayer*)malloc(sizeof(topPlayer)*11); 
+        int i=0,existe=0;
+        while(!feof(f)){
+            fscanf(f,"%s%d",top[i].id,&top[i].score);
+            i++;
+        }
+        i--;
+        remove("data/topPlayers.txt");
+        printf("%d\n",i);
+        for (int j = 0; j<i ;j++){ if(strcmp(top[j].id,player.id)==0){top[j].score=score;existe=1;}}
+        if(existe==0){strcpy(top[i].id,player.id);top[i].score=score;}
+        for (int j=0;j<i-1;j++){
+            for(int k=j+1;k<i;k++){
+                if(top[j].score>top[k].score) swap(&top[j],&top[k]);
+            }
+        }
+        FILE* fp=fopen("data/topPlayers.txt","a+");
+        if(!fp) printf("erreur\n");
+        while(i>-1){
+            fprintf(fp,"%s %d\n",top[i].id,top[i].score);
+            i--;
+        }
+    }
+}
+int score(login_txt_ player,game_options_ opt){
+    int pourcentage,score;
+    switch(opt.nbr_time){
+        case 10: pourcentage=5;break;
+        case 15: pourcentage=0;break;
+        case 20: pourcentage=-5;break;
+    }
+    score=(10*opt.nbr_letters)-opt.nbr_time;
+    score+=(score*pourcentage)/100;
+    FILE* f=fopen("data/players.bin","ab+");
+    rewind(f);
+    if(!f) printf("data/Erreur ouverture\n");
     login_txt_ user;
     while(!feof(f)){
         fread(&user,sizeof(user),1,f);
-        if(strcmp(user.id,player.id)==0 && strcmp(user.passwd,player.passwd)==0) return 1;
+            if(strcmp(user.id,player.id)==0 && strcmp(user.passwd,player.passwd)==0){
+                user.score+=score;
+                fseek(f,-1L*sizeof(user),SEEK_CUR);
+                fwrite(&user,sizeof(user),1,f);
+                fclose(f);
+                topPlayers(user,user.score);
+                return 1;
+            }   
     }
     fclose(f);
     return 0;
@@ -140,9 +221,7 @@ char* saisirMot(int nblettres,char* saisi){
     for(int i=0;i<strlen(saisi);i++) saisi[i]=toupper(saisi[i]);
     return saisi;
 }
-//tester si le mot existe dans le dictionnaire
 
-//test sur les lettres: bien pacée, mal placée....
 
 int correct(char *mot,char *saisi){
     if(strcmp(mot,saisi)==0) return 1;
@@ -202,11 +281,10 @@ int motFrancais(char *mot,int nblettres){
     return 0;
 
 }
-//déroulement de la partie
-
-////
 
 
+////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
 void reset_input(){
     i=0;
     while(i<25){
@@ -243,6 +321,7 @@ void login_txt_input(SDL_Renderer* renderer,char* text){
                         break;
                     case SDL_SCANCODE_RETURN:
                         menu.input_state = INPUT_S_PASSWD;
+                        SDL_StopTextInput();
                         break;
 
                 }
@@ -277,10 +356,13 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
                     case SDL_SCANCODE_RETURN:
                         if (login(login_data)==1) {
                             game.state=PLAYING_PARAMETERS_STATE;
+                            menu.select=NOT_SELECTED;
+                            menu.hover=NOT_SELECTED;
+                            SDL_StopTextInput();
                         } else {
                             reset_input();
+                            SDL_StopTextInput();
                         }
-                        
                         break;
 
                 }
@@ -350,6 +432,7 @@ void singup_txt_input(SDL_Renderer* renderer,char* text){
                         break;
                     case SDL_SCANCODE_RETURN:
                         menu.input_state = INPUT_S_PASSWD;
+                        SDL_StopTextInput();
                         break;
                 }
         }
@@ -383,6 +466,7 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text){
                         signup(singup_data);
                         strcpy(singup_data.id,"");
                         strcpy(singup_data.passwd,"");
+                        SDL_StopTextInput();
                         break;
 
                 }
@@ -403,9 +487,6 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text){
             i++;
         }
 }
-
-
-
 
 void render_singup(SDL_Renderer *renderer){
     render_on_xy(SINGUP_BG,renderer,0,0);
@@ -428,6 +509,7 @@ void render_singup(SDL_Renderer *renderer){
 
 void render_top_players(SDL_Renderer *renderer){
     render_on_xy(TOP_PLAYERS_BG,renderer,0,0);
+    
 }
 
 
@@ -463,34 +545,27 @@ void render_game_menu(SDL_Renderer *renderer){
 
     if (mouse_x > 445-BOTTON_H-30 && mouse_x < 445-BOTTON_H-30 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
          render_on_xy(RESET_BT,renderer,445-BOTTON_H-30+4,y3);
-            game_options.hover=RESET_SELECTED;
-    }    
+            game_options.hover=RESET_SELECTED;}    
     
     if (mouse_x > 445-2*BOTTON_H-60 && mouse_x < 445-2*BOTTON_H-60 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
          render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60+4,y3);
-            game_options.hover=LOGOUT_SELECTED;
-    }
+            game_options.hover=LOGOUT_SELECTED;}
     // nbr arrows effects : ///////////////////////////////////////////////////////////
     if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1 && mouse_y < y1 + ARROW_W){
         render_on_xy(NBR_6,renderer,x1+1,y1);
-        game_options.hover=NBR_6_SELECTED;
-    }
-if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+nxt && mouse_y < y1+nxt + ARROW_W){
+        game_options.hover=NBR_6_SELECTED;}
+    if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+nxt && mouse_y < y1+nxt + ARROW_W){
         render_on_xy(NBR_7,renderer,x1+1,y1+nxt);
-        game_options.hover=NBR_7_SELECTED; 
-}
-if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+2*nxt && mouse_y < y1+2*nxt + ARROW_W){
+        game_options.hover=NBR_7_SELECTED;}
+    if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+2*nxt && mouse_y < y1+2*nxt + ARROW_W){
         render_on_xy(NBR_8,renderer,x1+1,y1+2*nxt);
-        game_options.hover=NBR_8_SELECTED;   
-}
-if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+3*nxt && mouse_y < y1+3*nxt + ARROW_W){
+        game_options.hover=NBR_8_SELECTED;  }
+    if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+3*nxt && mouse_y < y1+3*nxt + ARROW_W){
         render_on_xy(NBR_9,renderer,x1+1,y1+3*nxt);
-        game_options.hover=NBR_9_SELECTED;
-}
-if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+4*nxt && mouse_y < y1+4*nxt + ARROW_W){
+        game_options.hover=NBR_9_SELECTED;}
+    if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+4*nxt && mouse_y < y1+4*nxt + ARROW_W){
         render_on_xy(NBR_10,renderer,x1+1,y1+4*nxt);
-        game_options.hover=NBR_10_SELECTED;
-}
+        game_options.hover=NBR_10_SELECTED;}
 
 // nbr arrows effects : ///////////////////////////////////////////////////////////
 
@@ -512,15 +587,10 @@ if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+4*nxt && mouse_y < y1
 // render box : 
 void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
     switch (boxBG){
-        case BOX_R_BLACK:
-            render_on_xy(BOX_BLACK_BG,renderer,x,y);
-            break;
-        case BOX_R_BLEU:
-            render_on_xy(BOX_BLEU_BG,renderer,x,y); break;
-        case BOX_R_RED:
-            render_on_xy(BOX_RED_BG,renderer,x,y); break;
-        case BOX_R_YELLOW:
-            render_on_xy(BOX_YELLOW_BG,renderer,x,y); break;
+        case BOX_R_BLACK:render_on_xy(BOX_BLACK_BG,renderer,x,y);break;
+        case BOX_R_BLEU:render_on_xy(BOX_BLEU_BG,renderer,x,y); break;
+        case BOX_R_RED:render_on_xy(BOX_RED_BG,renderer,x,y); break;
+        case BOX_R_YELLOW:render_on_xy(BOX_YELLOW_BG,renderer,x,y); break;
     }
 }
 
@@ -528,123 +598,53 @@ void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
 // render box text : 
 void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
     switch (boxCH){
-        case A: 
-            render_on_xy(A_R,renderer,x,y);break;
-        case B:
-            render_on_xy(B_R,renderer,x,y);break;
-        case C:
-            render_on_xy(C_R,renderer,x,y);break;
-        case D:
-            render_on_xy(D_R,renderer,x,y);break;
-        case E:
-            render_on_xy(E_R,renderer,x,y);break;
-        case F:
-            render_on_xy(F_R,renderer,x,y);break;
-        case G:
-            render_on_xy(G_R,renderer,x,y);break;
-        case H:
-            render_on_xy(H_R,renderer,x,y);break;
-        case I:
-            render_on_xy(I_R,renderer,x,y);break;
-        case J:
-            render_on_xy(J_R,renderer,x,y);break;
-        case K:
-            render_on_xy(K_R,renderer,x,y);break;
-        case L:
-            render_on_xy(L_R,renderer,x,y);break;
-        case M:
-            render_on_xy(M_R,renderer,x,y);break;
-        case N:
-            render_on_xy(N_R,renderer,x,y);break;
-        case O:
-            render_on_xy(O_R,renderer,x,y);break;
-        case P:
-            render_on_xy(P_R,renderer,x,y);break;
-        case Q:
-            render_on_xy(Q_R,renderer,x,y);break;
-        case R:
-            render_on_xy(R_R,renderer,x,y);break;
-        case S:
-            render_on_xy(S_R,renderer,x,y);break;
-        case T:
-            render_on_xy(T_R,renderer,x,y);break;
-        case U:
-            render_on_xy(U_R,renderer,x,y);break;
-        case V:
-            render_on_xy(V_R,renderer,x,y);break;
-        case W:
-            render_on_xy(W_R,renderer,x,y);break;
-        case X:
-            render_on_xy(X_R,renderer,x,y);break;
-        case Y:
-            render_on_xy(Y_R,renderer,x,y);break;
-        case Z:
-            render_on_xy(Z_R,renderer,x,y);break;
-
+        case A:render_on_xy(A_R,renderer,x,y);break;
+        case B:render_on_xy(B_R,renderer,x,y);break;
+        case C:render_on_xy(C_R,renderer,x,y);break;
+        case D:render_on_xy(D_R,renderer,x,y);break;
+        case E:render_on_xy(E_R,renderer,x,y);break;
+        case F:render_on_xy(F_R,renderer,x,y);break;
+        case G:render_on_xy(G_R,renderer,x,y);break;
+        case H:render_on_xy(H_R,renderer,x,y);break;
+        case I:render_on_xy(I_R,renderer,x,y);break;
+        case J:render_on_xy(J_R,renderer,x,y);break;
+        case K:render_on_xy(K_R,renderer,x,y);break;
+        case L:render_on_xy(L_R,renderer,x,y);break;
+        case M:render_on_xy(M_R,renderer,x,y);break;
+        case N:render_on_xy(N_R,renderer,x,y);break;
+        case O:render_on_xy(O_R,renderer,x,y);break;
+        case P:render_on_xy(P_R,renderer,x,y);break;
+        case Q:render_on_xy(Q_R,renderer,x,y);break;
+        case R:render_on_xy(R_R,renderer,x,y);break;
+        case S:render_on_xy(S_R,renderer,x,y);break;
+        case T:render_on_xy(T_R,renderer,x,y);break;
+        case U:render_on_xy(U_R,renderer,x,y);break;
+        case V:render_on_xy(V_R,renderer,x,y);break;
+        case W:render_on_xy(W_R,renderer,x,y);break;
+        case X:render_on_xy(X_R,renderer,x,y);break;
+        case Y:render_on_xy(Y_R,renderer,x,y);break;
+        case Z:render_on_xy(Z_R,renderer,x,y);break;
     }
 }
 
-// render linge ;
 
-void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
-            int x=266,y=160;
-            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);}
+void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters){
 
-void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
-            int x=266-25,y=160;
-            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);}
+                    tempsActuel = SDL_GetTicks();
+                        if (tempsActuel - tempsPrecedent > 1000){
+                        temps--;
+                        if (temps == 0){ 
+                            pass++;temps=game_options.nbr_time;
+                            i=0;
+                            prev=0;
+                        }
+                        tempsPrecedent = tempsActuel;
+                        }
 
-void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
-            int x=266-50,y=160;
-            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
-            int x=266-75,y=160;
-            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
-            int x=266-100,y=160;
-            render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[1],x+BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[2],x+2*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[3],x+3*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
-            render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
-////////////////////////////////////////////////////////////////////////////////////
-int player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters){
 
                 SDL_Event event;  //SDL_Event event;
                  while(SDL_PollEvent(&event)){
+
                     switch (event.type){
                         case SDL_QUIT:
                                running = false; break;
@@ -660,16 +660,18 @@ int player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_l
                                  case SDL_SCANCODE_RETURN:
                                     if (i==nbr_letters){
                                         if(motFrancais(text,nbr_letters)==1){
-                                            if(correct(text,playing_data6.generated,)==1){
-                                                // won state
-                                                //score ++
+                                            if(correct(text,playing_data6.generated)==1){
+                                                game.state=GAME_OVER_STATE;
+                                                score(login_data,game_options);
+                                                game_over(renderer,1,text);
                                             }
                                             verification(playing_data6.generated,text,box);
 
                                         }
                                     pass++;// move to next linge
-                                    i=0;
+                                    i=0; // rest typing cursur place
                                     prev=0;
+                                    temps=game_options.nbr_time;
                                     }
                                     break;
                                 case SDL_SCANCODE_Q: text[i]='A'; chow[i]=A;box[i]=BOX_R_BLEU; i++; break;
@@ -691,107 +693,17 @@ int player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_l
                                 case SDL_SCANCODE_J: text[i]='J'; chow[i]=J;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_K: text[i]='K'; chow[i]=K;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_L: text[i]='L'; chow[i]=L;box[i]=BOX_R_BLEU; i++; break;
-                                case SDL_SCANCODE_SEMICOLON: text[i]='M'; chow[i]=M;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_Z: text[i]='W'; chow[i]=W;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_X: text[i]='X'; chow[i]=X;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_C: text[i]='C'; chow[i]=C;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_V: text[i]='V'; chow[i]=V;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_B: text[i]='B'; chow[i]=B;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_N: text[i]='N'; chow[i]=N;box[i]=BOX_R_BLEU; i++; break;
+                                case SDL_SCANCODE_SEMICOLON: text[i]='M'; chow[i]=M;box[i]=BOX_R_BLEU; i++; break;
             }
         }
     }
-
-return pass;
 }
-
-
-int txt_to_chow(char* text,int indice){
-    switch(text[indice]){
-        case 'A': return A; break;
-        case 'Z': return Z; break;
-        case 'E': return E; break;
-        case 'R': return R; break;
-        case 'T': return T; break;
-        case 'Y': return Y; break;
-        case 'U': return U; break;
-        case 'I': return I; break;
-        case 'O': return O; break;
-        case 'P': return P; break;
-        case 'Q': return Q; break;
-        case 'S': return S; break;
-        case 'D': return D; break;
-        case 'F': return F; break;
-        case 'G': return G; break;
-        case 'H': return H; break;
-        case 'J': return J; break;
-        case 'K': return K; break;
-        case 'L': return L; break;
-        case 'M': return M; break;
-        case 'W': return W; break;
-        case 'X': return X; break;
-        case 'C': return C; break;
-        case 'V': return V; break;
-        case 'B': return B; break;
-        case 'N': return N; break;
-    }
-}
-
-// linge text data chow :
-void render_linge_text6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
-    int x=266,y=160;
-    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge_text7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
-    int x=266-25,y=160;
-    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge_text8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
-    int x=266-50,y=160;
-    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge_text9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
-    int x=266-75,y=160;
-    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);}
-
-void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
-    int x=266-100,y=160;
-    render_box_text(renderer,linge.chow[0],x,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[1],x+BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[2],x+2*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[3],x+3*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[4],x+4*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[5],x+5*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[6],x+6*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[7],x+7*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[8],x+8*BOX,y+(h_pose - 1)*BOX);
-    render_box_text(renderer,linge.chow[9],x+9*BOX,y+(h_pose - 1)*BOX);}
 
 
 
@@ -888,7 +800,7 @@ void input_data6(SDL_Renderer* renderer){
                 data_grid6.linge1.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
                prev=1;
            }
-            pass = player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box,6);
+            player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box,6);
             break;
         case 2 :
             if(prev==0){
@@ -910,7 +822,7 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge2.box[5]=BOX_R_RED;data_grid6.linge2.chow[5]=data_grid6.linge1.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge2.text,data_grid6.linge2.chow,data_grid6.linge2.box,6);
+            player_input(renderer ,data_grid6.linge2.text,data_grid6.linge2.chow,data_grid6.linge2.box,6);
             break;
         case 3 :
             if(prev==0){
@@ -932,7 +844,7 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge3.box[5]=BOX_R_RED;data_grid6.linge3.chow[5]=data_grid6.linge2.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge3.text,data_grid6.linge3.chow,data_grid6.linge3.box,6);
+            player_input(renderer ,data_grid6.linge3.text,data_grid6.linge3.chow,data_grid6.linge3.box,6);
             break;
         case 4 :
             if(prev==0){
@@ -954,7 +866,7 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge4.box[5]=BOX_R_RED;data_grid6.linge4.chow[5]=data_grid6.linge3.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge4.text,data_grid6.linge4.chow,data_grid6.linge4.box,6);
+            player_input(renderer ,data_grid6.linge4.text,data_grid6.linge4.chow,data_grid6.linge4.box,6);
             break;
         case 5 :
             if(prev==0){
@@ -976,7 +888,7 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge5.box[5]=BOX_R_RED;data_grid6.linge5.chow[5]=data_grid6.linge4.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge5.text,data_grid6.linge5.chow,data_grid6.linge5.box,6);
+            player_input(renderer ,data_grid6.linge5.text,data_grid6.linge5.chow,data_grid6.linge5.box,6);
             break;
         case 6 :
             if(prev==0){
@@ -998,7 +910,7 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge6.box[5]=BOX_R_RED;data_grid6.linge6.chow[5]=data_grid6.linge5.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge6.text,data_grid6.linge6.chow,data_grid6.linge6.box,6);
+            player_input(renderer ,data_grid6.linge6.text,data_grid6.linge6.chow,data_grid6.linge6.box,6);
             break;
         case 7 :
             if(prev==0){
@@ -1020,11 +932,351 @@ void input_data6(SDL_Renderer* renderer){
                     data_grid6.linge7.box[5]=BOX_R_RED;data_grid6.linge7.chow[5]=data_grid6.linge6.chow[5];}
                 prev=1;
             }
-            pass = player_input(renderer ,data_grid6.linge7.text,data_grid6.linge7.chow,data_grid6.linge7.box,6);
+            player_input(renderer ,data_grid6.linge7.text,data_grid6.linge7.chow,data_grid6.linge7.box,6);
             break;
         case 8 :
-            // loser
-            //reset
+                game.state=GAME_OVER_STATE;
+                game_over(renderer,0,playing_data6.generated);
+            break;
+
+    
+    }
+}
+
+void input_data7(SDL_Renderer* renderer){
+    switch(pass){
+        case 1 :
+                if(prev==0){
+                data_grid7.linge1.box[1]=BOX_R_RED;
+                data_grid7.linge1.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge1.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge1.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+               prev=1;
+           }
+            player_input(renderer ,data_grid7.linge1.text,data_grid7.linge1.chow,data_grid7.linge1.box,7);
+            break;
+        case 2 :
+            if(prev==0){
+                data_grid7.linge2.box[1]=BOX_R_RED;
+                data_grid7.linge2.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge2.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge2.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge1.box[0]==BOX_R_RED){
+                    data_grid7.linge2.box[0]=BOX_R_RED;data_grid7.linge2.chow[0]=data_grid7.linge1.chow[0];}
+                if(data_grid7.linge1.box[1]==BOX_R_RED){
+                    data_grid7.linge2.box[1]=BOX_R_RED;data_grid7.linge2.chow[1]=data_grid7.linge1.chow[1];}
+                if(data_grid7.linge1.box[2]==BOX_R_RED){
+                    data_grid7.linge2.box[2]=BOX_R_RED;data_grid7.linge2.chow[2]=data_grid7.linge1.chow[2];}
+                if(data_grid7.linge1.box[3]==BOX_R_RED){
+                    data_grid7.linge2.box[3]=BOX_R_RED;data_grid7.linge2.chow[3]=data_grid7.linge1.chow[3];}
+                if(data_grid7.linge1.box[4]==BOX_R_RED){
+                    data_grid7.linge2.box[4]=BOX_R_RED;data_grid7.linge2.chow[4]=data_grid7.linge1.chow[4];}
+                if(data_grid7.linge1.box[5]==BOX_R_RED){
+                    data_grid7.linge2.box[5]=BOX_R_RED;data_grid7.linge2.chow[5]=data_grid7.linge1.chow[5];}
+                if(data_grid7.linge1.box[6]==BOX_R_RED){
+                    data_grid7.linge2.box[6]=BOX_R_RED;data_grid7.linge2.chow[6]=data_grid7.linge1.chow[6];}
+
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge2.text,data_grid7.linge2.chow,data_grid7.linge2.box,7);
+            break;
+        case 3 :
+            if(prev==0){
+                data_grid7.linge3.box[1]=BOX_R_RED;
+                data_grid7.linge3.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge3.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge3.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge2.box[0]==BOX_R_RED){
+                    data_grid7.linge3.box[0]=BOX_R_RED;data_grid7.linge3.chow[0]=data_grid7.linge2.chow[0];}
+                if(data_grid7.linge2.box[1]==BOX_R_RED){
+                    data_grid7.linge3.box[1]=BOX_R_RED;data_grid7.linge3.chow[1]=data_grid7.linge2.chow[1];}
+                if(data_grid7.linge2.box[2]==BOX_R_RED){
+                    data_grid7.linge3.box[2]=BOX_R_RED;data_grid7.linge3.chow[2]=data_grid7.linge2.chow[2];}
+                if(data_grid7.linge2.box[3]==BOX_R_RED){
+                    data_grid7.linge3.box[3]=BOX_R_RED;data_grid7.linge3.chow[3]=data_grid7.linge2.chow[3];}
+                if(data_grid7.linge2.box[4]==BOX_R_RED){
+                    data_grid7.linge3.box[4]=BOX_R_RED;data_grid7.linge3.chow[4]=data_grid7.linge2.chow[4];}
+                if(data_grid7.linge2.box[5]==BOX_R_RED){
+                    data_grid7.linge3.box[5]=BOX_R_RED;data_grid7.linge3.chow[5]=data_grid7.linge2.chow[5];}
+                if(data_grid7.linge2.box[6]==BOX_R_RED){
+                    data_grid7.linge3.box[6]=BOX_R_RED;data_grid7.linge3.chow[6]=data_grid7.linge2.chow[6];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge3.text,data_grid7.linge3.chow,data_grid7.linge3.box,7);
+            break;
+        case 4 :
+            if(prev==0){
+                data_grid7.linge4.box[1]=BOX_R_RED;
+                data_grid7.linge4.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge4.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge4.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge3.box[0]==BOX_R_RED){
+                    data_grid7.linge4.box[0]=BOX_R_RED;data_grid7.linge4.chow[0]=data_grid7.linge3.chow[0];}
+                if(data_grid7.linge3.box[1]==BOX_R_RED){
+                    data_grid7.linge4.box[1]=BOX_R_RED;data_grid7.linge4.chow[1]=data_grid7.linge3.chow[1];}
+                if(data_grid7.linge3.box[2]==BOX_R_RED){
+                    data_grid7.linge4.box[2]=BOX_R_RED;data_grid7.linge4.chow[2]=data_grid7.linge3.chow[2];}
+                if(data_grid7.linge3.box[3]==BOX_R_RED){
+                    data_grid7.linge4.box[3]=BOX_R_RED;data_grid7.linge4.chow[3]=data_grid7.linge3.chow[3];}
+                if(data_grid7.linge3.box[4]==BOX_R_RED){
+                    data_grid7.linge4.box[4]=BOX_R_RED;data_grid7.linge4.chow[4]=data_grid7.linge3.chow[4];}
+                if(data_grid7.linge3.box[5]==BOX_R_RED){
+                    data_grid7.linge4.box[5]=BOX_R_RED;data_grid7.linge4.chow[5]=data_grid7.linge3.chow[5];}
+                if(data_grid7.linge3.box[6]==BOX_R_RED){
+                    data_grid7.linge4.box[6]=BOX_R_RED;data_grid7.linge4.chow[6]=data_grid7.linge3.chow[6];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge4.text,data_grid7.linge4.chow,data_grid7.linge4.box,7);
+            break;
+        case 5 :
+            if(prev==0){
+                data_grid7.linge5.box[1]=BOX_R_RED;
+                data_grid7.linge5.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge5.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge5.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge4.box[0]==BOX_R_RED){
+                    data_grid7.linge5.box[0]=BOX_R_RED;data_grid7.linge5.chow[0]=data_grid7.linge4.chow[0];}
+                if(data_grid7.linge4.box[1]==BOX_R_RED){
+                    data_grid7.linge5.box[1]=BOX_R_RED;data_grid7.linge5.chow[1]=data_grid7.linge4.chow[1];}
+                if(data_grid7.linge4.box[2]==BOX_R_RED){
+                    data_grid7.linge5.box[2]=BOX_R_RED;data_grid7.linge5.chow[2]=data_grid7.linge4.chow[2];}
+                if(data_grid7.linge4.box[3]==BOX_R_RED){
+                    data_grid7.linge5.box[3]=BOX_R_RED;data_grid7.linge5.chow[3]=data_grid7.linge4.chow[3];}
+                if(data_grid7.linge4.box[4]==BOX_R_RED){
+                    data_grid7.linge5.box[4]=BOX_R_RED;data_grid7.linge5.chow[4]=data_grid7.linge4.chow[4];}
+                if(data_grid7.linge4.box[5]==BOX_R_RED){
+                    data_grid7.linge5.box[5]=BOX_R_RED;data_grid7.linge5.chow[5]=data_grid7.linge4.chow[5];}
+                if(data_grid7.linge4.box[6]==BOX_R_RED){
+                    data_grid7.linge5.box[6]=BOX_R_RED;data_grid7.linge5.chow[6]=data_grid7.linge4.chow[6];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge5.text,data_grid7.linge5.chow,data_grid7.linge5.box,7);
+            break;
+        case 6 :
+            if(prev==0){
+                data_grid7.linge6.box[1]=BOX_R_RED;
+                data_grid7.linge6.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge6.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge6.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge5.box[0]==BOX_R_RED){
+                    data_grid7.linge6.box[0]=BOX_R_RED;data_grid7.linge6.chow[0]=data_grid7.linge5.chow[0];}
+                if(data_grid7.linge5.box[1]==BOX_R_RED){
+                    data_grid7.linge6.box[1]=BOX_R_RED;data_grid7.linge6.chow[1]=data_grid7.linge5.chow[1];}
+                if(data_grid7.linge5.box[2]==BOX_R_RED){
+                    data_grid7.linge6.box[2]=BOX_R_RED;data_grid7.linge6.chow[2]=data_grid7.linge5.chow[2];}
+                if(data_grid7.linge5.box[3]==BOX_R_RED){
+                    data_grid7.linge6.box[3]=BOX_R_RED;data_grid7.linge6.chow[3]=data_grid7.linge5.chow[3];}
+                if(data_grid7.linge5.box[4]==BOX_R_RED){
+                    data_grid7.linge6.box[4]=BOX_R_RED;data_grid7.linge6.chow[4]=data_grid7.linge5.chow[4];}
+                if(data_grid7.linge5.box[5]==BOX_R_RED){
+                    data_grid7.linge6.box[5]=BOX_R_RED;data_grid7.linge6.chow[5]=data_grid7.linge5.chow[5];}
+                if(data_grid7.linge5.box[6]==BOX_R_RED){
+                    data_grid7.linge6.box[6]=BOX_R_RED;data_grid7.linge6.chow[6]=data_grid7.linge5.chow[6];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge6.text,data_grid7.linge6.chow,data_grid7.linge6.box,7);
+            break;
+        case 7 :
+            if(prev==0){
+                data_grid7.linge7.box[1]=BOX_R_RED;
+                data_grid7.linge7.chow[1]=txt_to_chow(playing_data7.generated,1);
+                data_grid7.linge7.box[NBR_L_7-2]=BOX_R_RED;
+                data_grid7.linge7.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
+                if(data_grid7.linge6.box[0]==BOX_R_RED){
+                    data_grid7.linge7.box[0]=BOX_R_RED;data_grid7.linge7.chow[0]=data_grid7.linge6.chow[0];}
+                if(data_grid7.linge6.box[1]==BOX_R_RED){
+                    data_grid7.linge7.box[1]=BOX_R_RED;data_grid7.linge7.chow[1]=data_grid7.linge6.chow[1];}
+                if(data_grid7.linge6.box[2]==BOX_R_RED){
+                    data_grid7.linge7.box[2]=BOX_R_RED;data_grid7.linge7.chow[2]=data_grid7.linge6.chow[2];}
+                if(data_grid7.linge6.box[3]==BOX_R_RED){
+                    data_grid7.linge7.box[3]=BOX_R_RED;data_grid7.linge7.chow[3]=data_grid7.linge6.chow[3];}
+                if(data_grid7.linge6.box[4]==BOX_R_RED){
+                    data_grid7.linge7.box[4]=BOX_R_RED;data_grid7.linge7.chow[4]=data_grid7.linge6.chow[4];}
+                if(data_grid7.linge6.box[5]==BOX_R_RED){
+                    data_grid7.linge7.box[5]=BOX_R_RED;data_grid7.linge7.chow[5]=data_grid7.linge6.chow[5];}
+                if(data_grid7.linge6.box[6]==BOX_R_RED){
+                    data_grid7.linge7.box[6]=BOX_R_RED;data_grid7.linge7.chow[6]=data_grid7.linge6.chow[6];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid7.linge7.text,data_grid7.linge7.chow,data_grid7.linge7.box,7);
+            break;
+        case 8 :
+                game.state=GAME_OVER_STATE;
+                game_over(renderer,0,playing_data7.generated);
+            break;
+    }
+}
+
+void input_data8(SDL_Renderer* renderer){
+    switch(pass){
+        case 1 :
+                if(prev==0){
+                data_grid8.linge1.box[1]=BOX_R_RED;
+                data_grid8.linge1.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge1.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge1.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+               prev=1;
+           }
+            player_input(renderer ,data_grid8.linge1.text,data_grid8.linge1.chow,data_grid8.linge1.box,8);
+            break;
+        case 2 :
+            if(prev==0){
+                data_grid8.linge2.box[1]=BOX_R_RED;
+                data_grid8.linge2.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge2.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge2.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge1.box[0]==BOX_R_RED){
+                    data_grid8.linge2.box[0]=BOX_R_RED;data_grid8.linge2.chow[0]=data_grid8.linge1.chow[0];}
+                if(data_grid8.linge1.box[1]==BOX_R_RED){
+                    data_grid8.linge2.box[1]=BOX_R_RED;data_grid8.linge2.chow[1]=data_grid8.linge1.chow[1];}
+                if(data_grid8.linge1.box[2]==BOX_R_RED){
+                    data_grid8.linge2.box[2]=BOX_R_RED;data_grid8.linge2.chow[2]=data_grid8.linge1.chow[2];}
+                if(data_grid8.linge1.box[3]==BOX_R_RED){
+                    data_grid8.linge2.box[3]=BOX_R_RED;data_grid8.linge2.chow[3]=data_grid8.linge1.chow[3];}
+                if(data_grid8.linge1.box[4]==BOX_R_RED){
+                    data_grid8.linge2.box[4]=BOX_R_RED;data_grid8.linge2.chow[4]=data_grid8.linge1.chow[4];}
+                if(data_grid8.linge1.box[5]==BOX_R_RED){
+                    data_grid8.linge2.box[5]=BOX_R_RED;data_grid8.linge2.chow[5]=data_grid8.linge1.chow[5];}
+                if(data_grid8.linge1.box[6]==BOX_R_RED){
+                    data_grid8.linge2.box[6]=BOX_R_RED;data_grid8.linge2.chow[6]=data_grid8.linge1.chow[6];}
+                if(data_grid8.linge1.box[7]==BOX_R_RED){
+                    data_grid8.linge2.box[7]=BOX_R_RED;data_grid8.linge2.chow[7]=data_grid8.linge1.chow[7];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge2.text,data_grid8.linge2.chow,data_grid8.linge2.box,8);
+            break;
+        case 3 :
+            if(prev==0){
+                data_grid8.linge3.box[1]=BOX_R_RED;
+                data_grid8.linge3.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge3.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge3.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge2.box[0]==BOX_R_RED){
+                    data_grid8.linge3.box[0]=BOX_R_RED;data_grid8.linge3.chow[0]=data_grid8.linge2.chow[0];}
+                if(data_grid8.linge2.box[1]==BOX_R_RED){
+                    data_grid8.linge3.box[1]=BOX_R_RED;data_grid8.linge3.chow[1]=data_grid8.linge2.chow[1];}
+                if(data_grid8.linge2.box[2]==BOX_R_RED){
+                    data_grid8.linge3.box[2]=BOX_R_RED;data_grid8.linge3.chow[2]=data_grid8.linge2.chow[2];}
+                if(data_grid8.linge2.box[3]==BOX_R_RED){
+                    data_grid8.linge3.box[3]=BOX_R_RED;data_grid8.linge3.chow[3]=data_grid8.linge2.chow[3];}
+                if(data_grid8.linge2.box[4]==BOX_R_RED){
+                    data_grid8.linge3.box[4]=BOX_R_RED;data_grid8.linge3.chow[4]=data_grid8.linge2.chow[4];}
+                if(data_grid8.linge2.box[5]==BOX_R_RED){
+                    data_grid8.linge3.box[5]=BOX_R_RED;data_grid8.linge3.chow[5]=data_grid8.linge2.chow[5];}
+                if(data_grid8.linge2.box[6]==BOX_R_RED){
+                    data_grid8.linge3.box[6]=BOX_R_RED;data_grid8.linge3.chow[6]=data_grid8.linge2.chow[6];}
+                if(data_grid8.linge2.box[7]==BOX_R_RED){
+                    data_grid8.linge3.box[7]=BOX_R_RED;data_grid8.linge3.chow[7]=data_grid8.linge2.chow[7];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge3.text,data_grid8.linge3.chow,data_grid8.linge3.box,8);
+            break;
+        case 4 :
+            if(prev==0){
+                data_grid8.linge4.box[1]=BOX_R_RED;
+                data_grid8.linge4.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge4.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge4.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge3.box[0]==BOX_R_RED){
+                    data_grid8.linge4.box[0]=BOX_R_RED;data_grid8.linge4.chow[0]=data_grid8.linge3.chow[0];}
+                if(data_grid8.linge3.box[1]==BOX_R_RED){
+                    data_grid8.linge4.box[1]=BOX_R_RED;data_grid8.linge4.chow[1]=data_grid8.linge3.chow[1];}
+                if(data_grid8.linge3.box[2]==BOX_R_RED){
+                    data_grid8.linge4.box[2]=BOX_R_RED;data_grid8.linge4.chow[2]=data_grid8.linge3.chow[2];}
+                if(data_grid8.linge3.box[3]==BOX_R_RED){
+                    data_grid8.linge4.box[3]=BOX_R_RED;data_grid8.linge4.chow[3]=data_grid8.linge3.chow[3];}
+                if(data_grid8.linge3.box[4]==BOX_R_RED){
+                    data_grid8.linge4.box[4]=BOX_R_RED;data_grid8.linge4.chow[4]=data_grid8.linge3.chow[4];}
+                if(data_grid8.linge3.box[5]==BOX_R_RED){
+                    data_grid8.linge4.box[5]=BOX_R_RED;data_grid8.linge4.chow[5]=data_grid8.linge3.chow[5];}
+                if(data_grid8.linge3.box[6]==BOX_R_RED){
+                    data_grid8.linge4.box[6]=BOX_R_RED;data_grid8.linge4.chow[6]=data_grid8.linge3.chow[6];}
+                if(data_grid8.linge3.box[7]==BOX_R_RED){
+                    data_grid8.linge4.box[7]=BOX_R_RED;data_grid8.linge4.chow[7]=data_grid8.linge3.chow[7];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge4.text,data_grid8.linge4.chow,data_grid8.linge4.box,8);
+            break;
+        case 5 :
+            if(prev==0){
+                data_grid8.linge5.box[1]=BOX_R_RED;
+                data_grid8.linge5.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge5.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge5.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge4.box[0]==BOX_R_RED){
+                    data_grid8.linge5.box[0]=BOX_R_RED;data_grid8.linge5.chow[0]=data_grid8.linge4.chow[0];}
+                if(data_grid8.linge4.box[1]==BOX_R_RED){
+                    data_grid8.linge5.box[1]=BOX_R_RED;data_grid8.linge5.chow[1]=data_grid8.linge4.chow[1];}
+                if(data_grid8.linge4.box[2]==BOX_R_RED){
+                    data_grid8.linge5.box[2]=BOX_R_RED;data_grid8.linge5.chow[2]=data_grid8.linge4.chow[2];}
+                if(data_grid8.linge4.box[3]==BOX_R_RED){
+                    data_grid8.linge5.box[3]=BOX_R_RED;data_grid8.linge5.chow[3]=data_grid8.linge4.chow[3];}
+                if(data_grid8.linge4.box[4]==BOX_R_RED){
+                    data_grid8.linge5.box[4]=BOX_R_RED;data_grid8.linge5.chow[4]=data_grid8.linge4.chow[4];}
+                if(data_grid8.linge4.box[5]==BOX_R_RED){
+                    data_grid8.linge5.box[5]=BOX_R_RED;data_grid8.linge5.chow[5]=data_grid8.linge4.chow[5];}
+                if(data_grid8.linge4.box[6]==BOX_R_RED){
+                    data_grid8.linge5.box[6]=BOX_R_RED;data_grid8.linge5.chow[6]=data_grid8.linge4.chow[6];}
+                if(data_grid8.linge4.box[7]==BOX_R_RED){
+                    data_grid8.linge5.box[7]=BOX_R_RED;data_grid8.linge5.chow[7]=data_grid8.linge4.chow[7];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge5.text,data_grid8.linge5.chow,data_grid8.linge5.box,8);
+            break;
+        case 6 :
+            if(prev==0){
+                data_grid8.linge6.box[1]=BOX_R_RED;
+                data_grid8.linge6.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge6.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge6.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge5.box[0]==BOX_R_RED){
+                    data_grid8.linge6.box[0]=BOX_R_RED;data_grid8.linge6.chow[0]=data_grid8.linge5.chow[0];}
+                if(data_grid8.linge5.box[1]==BOX_R_RED){
+                    data_grid8.linge6.box[1]=BOX_R_RED;data_grid8.linge6.chow[1]=data_grid8.linge5.chow[1];}
+                if(data_grid8.linge5.box[2]==BOX_R_RED){
+                    data_grid8.linge6.box[2]=BOX_R_RED;data_grid8.linge6.chow[2]=data_grid8.linge5.chow[2];}
+                if(data_grid8.linge5.box[3]==BOX_R_RED){
+                    data_grid8.linge6.box[3]=BOX_R_RED;data_grid8.linge6.chow[3]=data_grid8.linge5.chow[3];}
+                if(data_grid8.linge5.box[4]==BOX_R_RED){
+                    data_grid8.linge6.box[4]=BOX_R_RED;data_grid8.linge6.chow[4]=data_grid8.linge5.chow[4];}
+                if(data_grid8.linge5.box[5]==BOX_R_RED){
+                    data_grid8.linge6.box[5]=BOX_R_RED;data_grid8.linge6.chow[5]=data_grid8.linge5.chow[5];}
+                if(data_grid8.linge5.box[6]==BOX_R_RED){
+                    data_grid8.linge6.box[6]=BOX_R_RED;data_grid8.linge6.chow[6]=data_grid8.linge5.chow[6];}
+                if(data_grid8.linge5.box[7]==BOX_R_RED){
+                    data_grid8.linge6.box[7]=BOX_R_RED;data_grid8.linge6.chow[7]=data_grid8.linge5.chow[7];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge6.text,data_grid8.linge6.chow,data_grid8.linge6.box,8);
+            break;
+        case 7 :
+            if(prev==0){
+                data_grid8.linge7.box[1]=BOX_R_RED;
+                data_grid8.linge7.chow[1]=txt_to_chow(playing_data8.generated,1);
+                data_grid8.linge7.box[NBR_L_8-2]=BOX_R_RED;
+                data_grid8.linge7.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
+                if(data_grid8.linge6.box[0]==BOX_R_RED){
+                    data_grid8.linge7.box[0]=BOX_R_RED;data_grid8.linge7.chow[0]=data_grid8.linge6.chow[0];}
+                if(data_grid8.linge6.box[1]==BOX_R_RED){
+                    data_grid8.linge7.box[1]=BOX_R_RED;data_grid8.linge7.chow[1]=data_grid8.linge6.chow[1];}
+                if(data_grid8.linge6.box[2]==BOX_R_RED){
+                    data_grid8.linge7.box[2]=BOX_R_RED;data_grid8.linge7.chow[2]=data_grid8.linge6.chow[2];}
+                if(data_grid8.linge6.box[3]==BOX_R_RED){
+                    data_grid8.linge7.box[3]=BOX_R_RED;data_grid8.linge7.chow[3]=data_grid8.linge6.chow[3];}
+                if(data_grid8.linge6.box[4]==BOX_R_RED){
+                    data_grid8.linge7.box[4]=BOX_R_RED;data_grid8.linge7.chow[4]=data_grid8.linge6.chow[4];}
+                if(data_grid8.linge6.box[5]==BOX_R_RED){
+                    data_grid8.linge7.box[5]=BOX_R_RED;data_grid8.linge7.chow[5]=data_grid8.linge6.chow[5];}
+                if(data_grid8.linge6.box[7]==BOX_R_RED){
+                    data_grid8.linge7.box[7]=BOX_R_RED;data_grid8.linge7.chow[7]=data_grid8.linge6.chow[7];}
+
+                prev=1;
+            }
+            player_input(renderer ,data_grid8.linge7.text,data_grid8.linge7.chow,data_grid8.linge7.box,8);
+            break;
+        case 8 :
+                game.state=GAME_OVER_STATE;
+                game_over(renderer,0,playing_data8.generated);
             break;
 
     
@@ -1033,11 +1285,379 @@ void input_data6(SDL_Renderer* renderer){
 
 
 
+void input_data9(SDL_Renderer* renderer){
+    switch(pass){
+        case 1 :
+                if(prev==0){
+                data_grid9.linge1.box[1]=BOX_R_RED;
+                data_grid9.linge1.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge1.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge1.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+               prev=1;
+           }
+            player_input(renderer ,data_grid9.linge1.text,data_grid9.linge1.chow,data_grid9.linge1.box,9);
+            break;
+        case 2 :
+            if(prev==0){
+                data_grid9.linge2.box[1]=BOX_R_RED;
+                data_grid9.linge2.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge2.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge2.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge1.box[0]==BOX_R_RED){
+                    data_grid9.linge2.box[0]=BOX_R_RED;data_grid9.linge2.chow[0]=data_grid9.linge1.chow[0];}
+                if(data_grid9.linge1.box[1]==BOX_R_RED){
+                    data_grid9.linge2.box[1]=BOX_R_RED;data_grid9.linge2.chow[1]=data_grid9.linge1.chow[1];}
+                if(data_grid9.linge1.box[2]==BOX_R_RED){
+                    data_grid9.linge2.box[2]=BOX_R_RED;data_grid9.linge2.chow[2]=data_grid9.linge1.chow[2];}
+                if(data_grid9.linge1.box[3]==BOX_R_RED){
+                    data_grid9.linge2.box[3]=BOX_R_RED;data_grid9.linge2.chow[3]=data_grid9.linge1.chow[3];}
+                if(data_grid9.linge1.box[4]==BOX_R_RED){
+                    data_grid9.linge2.box[4]=BOX_R_RED;data_grid9.linge2.chow[4]=data_grid9.linge1.chow[4];}
+                if(data_grid9.linge1.box[5]==BOX_R_RED){
+                    data_grid9.linge2.box[5]=BOX_R_RED;data_grid9.linge2.chow[5]=data_grid9.linge1.chow[5];}
+                if(data_grid9.linge1.box[6]==BOX_R_RED){
+                    data_grid9.linge2.box[6]=BOX_R_RED;data_grid9.linge2.chow[6]=data_grid9.linge1.chow[6];}
+                if(data_grid9.linge1.box[7]==BOX_R_RED){
+                    data_grid9.linge2.box[7]=BOX_R_RED;data_grid9.linge2.chow[7]=data_grid9.linge1.chow[7];}
+                if(data_grid9.linge1.box[8]==BOX_R_RED){
+                    data_grid9.linge2.box[8]=BOX_R_RED;data_grid9.linge2.chow[8]=data_grid9.linge1.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge2.text,data_grid9.linge2.chow,data_grid9.linge2.box,9);
+            break;
+        case 3 :
+            if(prev==0){
+                data_grid9.linge3.box[1]=BOX_R_RED;
+                data_grid9.linge3.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge3.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge3.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge2.box[0]==BOX_R_RED){
+                    data_grid9.linge3.box[0]=BOX_R_RED;data_grid9.linge3.chow[0]=data_grid9.linge2.chow[0];}
+                if(data_grid9.linge2.box[1]==BOX_R_RED){
+                    data_grid9.linge3.box[1]=BOX_R_RED;data_grid9.linge3.chow[1]=data_grid9.linge2.chow[1];}
+                if(data_grid9.linge2.box[2]==BOX_R_RED){
+                    data_grid9.linge3.box[2]=BOX_R_RED;data_grid9.linge3.chow[2]=data_grid9.linge2.chow[2];}
+                if(data_grid9.linge2.box[3]==BOX_R_RED){
+                    data_grid9.linge3.box[3]=BOX_R_RED;data_grid9.linge3.chow[3]=data_grid9.linge2.chow[3];}
+                if(data_grid9.linge2.box[4]==BOX_R_RED){
+                    data_grid9.linge3.box[4]=BOX_R_RED;data_grid9.linge3.chow[4]=data_grid9.linge2.chow[4];}
+                if(data_grid9.linge2.box[5]==BOX_R_RED){
+                    data_grid9.linge3.box[5]=BOX_R_RED;data_grid9.linge3.chow[5]=data_grid9.linge2.chow[5];}
+                if(data_grid9.linge2.box[6]==BOX_R_RED){
+                    data_grid9.linge3.box[6]=BOX_R_RED;data_grid9.linge3.chow[6]=data_grid9.linge2.chow[6];}
+                if(data_grid9.linge2.box[7]==BOX_R_RED){
+                    data_grid9.linge3.box[7]=BOX_R_RED;data_grid9.linge3.chow[7]=data_grid9.linge2.chow[7];}
+                if(data_grid9.linge2.box[8]==BOX_R_RED){
+                    data_grid9.linge3.box[8]=BOX_R_RED;data_grid9.linge3.chow[8]=data_grid9.linge3.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge3.text,data_grid9.linge3.chow,data_grid9.linge3.box,9);
+            break;
+        case 4 :
+            if(prev==0){
+                data_grid9.linge4.box[1]=BOX_R_RED;
+                data_grid9.linge4.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge4.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge4.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge3.box[0]==BOX_R_RED){
+                    data_grid9.linge4.box[0]=BOX_R_RED;data_grid9.linge4.chow[0]=data_grid9.linge3.chow[0];}
+                if(data_grid9.linge3.box[1]==BOX_R_RED){
+                    data_grid9.linge4.box[1]=BOX_R_RED;data_grid9.linge4.chow[1]=data_grid9.linge3.chow[1];}
+                if(data_grid9.linge3.box[2]==BOX_R_RED){
+                    data_grid9.linge4.box[2]=BOX_R_RED;data_grid9.linge4.chow[2]=data_grid9.linge3.chow[2];}
+                if(data_grid9.linge3.box[3]==BOX_R_RED){
+                    data_grid9.linge4.box[3]=BOX_R_RED;data_grid9.linge4.chow[3]=data_grid9.linge3.chow[3];}
+                if(data_grid9.linge3.box[4]==BOX_R_RED){
+                    data_grid9.linge4.box[4]=BOX_R_RED;data_grid9.linge4.chow[4]=data_grid9.linge3.chow[4];}
+                if(data_grid9.linge3.box[5]==BOX_R_RED){
+                    data_grid9.linge4.box[5]=BOX_R_RED;data_grid9.linge4.chow[5]=data_grid9.linge3.chow[5];}
+                if(data_grid9.linge3.box[6]==BOX_R_RED){
+                    data_grid9.linge4.box[6]=BOX_R_RED;data_grid9.linge4.chow[6]=data_grid9.linge3.chow[6];}
+                if(data_grid9.linge3.box[7]==BOX_R_RED){
+                    data_grid9.linge4.box[7]=BOX_R_RED;data_grid9.linge4.chow[7]=data_grid9.linge3.chow[7];}
+                if(data_grid9.linge1.box[8]==BOX_R_RED){
+                    data_grid9.linge4.box[8]=BOX_R_RED;data_grid9.linge4.chow[8]=data_grid9.linge1.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge4.text,data_grid9.linge4.chow,data_grid9.linge4.box,8);
+            break;
+        case 5 :
+            if(prev==0){
+                data_grid9.linge5.box[1]=BOX_R_RED;
+                data_grid9.linge5.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge5.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge5.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge4.box[0]==BOX_R_RED){
+                    data_grid9.linge5.box[0]=BOX_R_RED;data_grid9.linge5.chow[0]=data_grid9.linge4.chow[0];}
+                if(data_grid9.linge4.box[1]==BOX_R_RED){
+                    data_grid9.linge5.box[1]=BOX_R_RED;data_grid9.linge5.chow[1]=data_grid9.linge4.chow[1];}
+                if(data_grid9.linge4.box[2]==BOX_R_RED){
+                    data_grid9.linge5.box[2]=BOX_R_RED;data_grid9.linge5.chow[2]=data_grid9.linge4.chow[2];}
+                if(data_grid9.linge4.box[3]==BOX_R_RED){
+                    data_grid9.linge5.box[3]=BOX_R_RED;data_grid9.linge5.chow[3]=data_grid9.linge4.chow[3];}
+                if(data_grid9.linge4.box[4]==BOX_R_RED){
+                    data_grid9.linge5.box[4]=BOX_R_RED;data_grid9.linge5.chow[4]=data_grid9.linge4.chow[4];}
+                if(data_grid9.linge4.box[5]==BOX_R_RED){
+                    data_grid9.linge5.box[5]=BOX_R_RED;data_grid9.linge5.chow[5]=data_grid9.linge4.chow[5];}
+                if(data_grid9.linge4.box[6]==BOX_R_RED){
+                    data_grid9.linge5.box[6]=BOX_R_RED;data_grid9.linge5.chow[6]=data_grid9.linge4.chow[6];}
+                if(data_grid9.linge4.box[7]==BOX_R_RED){
+                    data_grid9.linge5.box[7]=BOX_R_RED;data_grid9.linge5.chow[7]=data_grid9.linge4.chow[7];}
+                if(data_grid9.linge4.box[8]==BOX_R_RED){
+                    data_grid9.linge5.box[8]=BOX_R_RED;data_grid9.linge5.chow[8]=data_grid9.linge4.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge5.text,data_grid9.linge5.chow,data_grid9.linge5.box,9);
+            break;
+        case 6 :
+            if(prev==0){
+                data_grid9.linge6.box[1]=BOX_R_RED;
+                data_grid9.linge6.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge6.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge6.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge5.box[0]==BOX_R_RED){
+                    data_grid9.linge6.box[0]=BOX_R_RED;data_grid9.linge6.chow[0]=data_grid9.linge5.chow[0];}
+                if(data_grid9.linge5.box[1]==BOX_R_RED){
+                    data_grid9.linge6.box[1]=BOX_R_RED;data_grid9.linge6.chow[1]=data_grid9.linge5.chow[1];}
+                if(data_grid9.linge5.box[2]==BOX_R_RED){
+                    data_grid9.linge6.box[2]=BOX_R_RED;data_grid9.linge6.chow[2]=data_grid9.linge5.chow[2];}
+                if(data_grid9.linge5.box[3]==BOX_R_RED){
+                    data_grid9.linge6.box[3]=BOX_R_RED;data_grid9.linge6.chow[3]=data_grid9.linge5.chow[3];}
+                if(data_grid9.linge5.box[4]==BOX_R_RED){
+                    data_grid9.linge6.box[4]=BOX_R_RED;data_grid9.linge6.chow[4]=data_grid9.linge5.chow[4];}
+                if(data_grid9.linge5.box[5]==BOX_R_RED){
+                    data_grid9.linge6.box[5]=BOX_R_RED;data_grid9.linge6.chow[5]=data_grid9.linge5.chow[5];}
+                if(data_grid9.linge5.box[6]==BOX_R_RED){
+                    data_grid9.linge6.box[6]=BOX_R_RED;data_grid9.linge6.chow[6]=data_grid9.linge5.chow[6];}
+                if(data_grid9.linge5.box[7]==BOX_R_RED){
+                    data_grid9.linge6.box[7]=BOX_R_RED;data_grid9.linge6.chow[7]=data_grid9.linge5.chow[7];}
+                if(data_grid9.linge5.box[8]==BOX_R_RED){
+                    data_grid9.linge6.box[8]=BOX_R_RED;data_grid9.linge6.chow[8]=data_grid9.linge5.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge6.text,data_grid9.linge6.chow,data_grid9.linge6.box,9);
+            break;
+        case 7 :
+            if(prev==0){
+                data_grid9.linge7.box[1]=BOX_R_RED;
+                data_grid9.linge7.chow[1]=txt_to_chow(playing_data9.generated,1);
+                data_grid9.linge7.box[NBR_L_9-2]=BOX_R_RED;
+                data_grid9.linge7.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
+                if(data_grid9.linge6.box[0]==BOX_R_RED){
+                    data_grid9.linge7.box[0]=BOX_R_RED;data_grid9.linge7.chow[0]=data_grid9.linge6.chow[0];}
+                if(data_grid9.linge6.box[1]==BOX_R_RED){
+                    data_grid9.linge7.box[1]=BOX_R_RED;data_grid9.linge7.chow[1]=data_grid9.linge6.chow[1];}
+                if(data_grid9.linge6.box[2]==BOX_R_RED){
+                    data_grid9.linge7.box[2]=BOX_R_RED;data_grid9.linge7.chow[2]=data_grid9.linge6.chow[2];}
+                if(data_grid9.linge6.box[3]==BOX_R_RED){
+                    data_grid9.linge7.box[3]=BOX_R_RED;data_grid9.linge7.chow[3]=data_grid9.linge6.chow[3];}
+                if(data_grid9.linge6.box[4]==BOX_R_RED){
+                    data_grid9.linge7.box[4]=BOX_R_RED;data_grid9.linge7.chow[4]=data_grid9.linge6.chow[4];}
+                if(data_grid9.linge6.box[5]==BOX_R_RED){
+                    data_grid9.linge7.box[5]=BOX_R_RED;data_grid9.linge7.chow[5]=data_grid9.linge6.chow[5];}
+                if(data_grid9.linge6.box[7]==BOX_R_RED){
+                    data_grid9.linge7.box[7]=BOX_R_RED;data_grid9.linge7.chow[7]=data_grid9.linge6.chow[7];}
+                if(data_grid9.linge6.box[8]==BOX_R_RED){
+                    data_grid9.linge7.box[8]=BOX_R_RED;data_grid9.linge7.chow[8]=data_grid9.linge6.chow[8];}
+                prev=1;
+            }
+            player_input(renderer ,data_grid9.linge7.text,data_grid9.linge7.chow,data_grid9.linge7.box,9);
+            break;
+        case 8 :
+                game.state=GAME_OVER_STATE;
+                game_over(renderer,0,playing_data9.generated);
+            break;
 
+    
+    }
+}
 
+void input_data10(SDL_Renderer* renderer){
+    switch(pass){
+        case 1 :
+                if(prev==0){
+                data_grid10.linge1.box[1]=BOX_R_RED;
+                data_grid10.linge1.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge1.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge1.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+               prev=1;
+           }
+            player_input(renderer ,data_grid10.linge1.text,data_grid10.linge1.chow,data_grid10.linge1.box,10);
+            break;
+        case 2 :
+            if(prev==0){
+                data_grid10.linge2.box[1]=BOX_R_RED;
+                data_grid10.linge2.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge2.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge2.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge1.box[0]==BOX_R_RED){
+                    data_grid10.linge2.box[0]=BOX_R_RED;data_grid10.linge2.chow[0]=data_grid10.linge1.chow[0];}
+                if(data_grid10.linge1.box[1]==BOX_R_RED){
+                    data_grid10.linge2.box[1]=BOX_R_RED;data_grid10.linge2.chow[1]=data_grid10.linge1.chow[1];}
+                if(data_grid10.linge1.box[2]==BOX_R_RED){
+                    data_grid10.linge2.box[2]=BOX_R_RED;data_grid10.linge2.chow[2]=data_grid10.linge1.chow[2];}
+                if(data_grid10.linge1.box[3]==BOX_R_RED){
+                    data_grid10.linge2.box[3]=BOX_R_RED;data_grid10.linge2.chow[3]=data_grid10.linge1.chow[3];}
+                if(data_grid10.linge1.box[4]==BOX_R_RED){
+                    data_grid10.linge2.box[4]=BOX_R_RED;data_grid10.linge2.chow[4]=data_grid10.linge1.chow[4];}
+                if(data_grid10.linge1.box[5]==BOX_R_RED){
+                    data_grid10.linge2.box[5]=BOX_R_RED;data_grid10.linge2.chow[5]=data_grid10.linge1.chow[5];}
+                if(data_grid10.linge1.box[6]==BOX_R_RED){
+                    data_grid10.linge2.box[6]=BOX_R_RED;data_grid10.linge2.chow[6]=data_grid10.linge1.chow[6];}
+                if(data_grid10.linge1.box[7]==BOX_R_RED){
+                    data_grid10.linge2.box[7]=BOX_R_RED;data_grid10.linge2.chow[7]=data_grid10.linge1.chow[7];}
+                if(data_grid10.linge1.box[8]==BOX_R_RED){
+                    data_grid10.linge2.box[8]=BOX_R_RED;data_grid10.linge2.chow[8]=data_grid10.linge1.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge2.text,data_grid10.linge2.chow,data_grid10.linge2.box,10);
+            break;
+        case 3 :
+            if(prev==0){
+                data_grid10.linge3.box[1]=BOX_R_RED;
+                data_grid10.linge3.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge3.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge3.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge2.box[0]==BOX_R_RED){
+                    data_grid10.linge3.box[0]=BOX_R_RED;data_grid10.linge3.chow[0]=data_grid10.linge2.chow[0];}
+                if(data_grid10.linge2.box[1]==BOX_R_RED){
+                    data_grid10.linge3.box[1]=BOX_R_RED;data_grid10.linge3.chow[1]=data_grid10.linge2.chow[1];}
+                if(data_grid10.linge2.box[2]==BOX_R_RED){
+                    data_grid10.linge3.box[2]=BOX_R_RED;data_grid10.linge3.chow[2]=data_grid10.linge2.chow[2];}
+                if(data_grid10.linge2.box[3]==BOX_R_RED){
+                    data_grid10.linge3.box[3]=BOX_R_RED;data_grid10.linge3.chow[3]=data_grid10.linge2.chow[3];}
+                if(data_grid10.linge2.box[4]==BOX_R_RED){
+                    data_grid10.linge3.box[4]=BOX_R_RED;data_grid10.linge3.chow[4]=data_grid10.linge2.chow[4];}
+                if(data_grid10.linge2.box[5]==BOX_R_RED){
+                    data_grid10.linge3.box[5]=BOX_R_RED;data_grid10.linge3.chow[5]=data_grid10.linge2.chow[5];}
+                if(data_grid10.linge2.box[6]==BOX_R_RED){
+                    data_grid10.linge3.box[6]=BOX_R_RED;data_grid10.linge3.chow[6]=data_grid10.linge2.chow[6];}
+                if(data_grid10.linge2.box[7]==BOX_R_RED){
+                    data_grid10.linge3.box[7]=BOX_R_RED;data_grid10.linge3.chow[7]=data_grid10.linge2.chow[7];}
+                if(data_grid10.linge2.box[8]==BOX_R_RED){
+                    data_grid10.linge3.box[8]=BOX_R_RED;data_grid10.linge3.chow[8]=data_grid10.linge3.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge3.text,data_grid10.linge3.chow,data_grid10.linge3.box,10);
+            break;
+        case 4 :
+            if(prev==0){
+                data_grid10.linge4.box[1]=BOX_R_RED;
+                data_grid10.linge4.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge4.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge4.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge3.box[0]==BOX_R_RED){
+                    data_grid10.linge4.box[0]=BOX_R_RED;data_grid10.linge4.chow[0]=data_grid10.linge3.chow[0];}
+                if(data_grid10.linge3.box[1]==BOX_R_RED){
+                    data_grid10.linge4.box[1]=BOX_R_RED;data_grid10.linge4.chow[1]=data_grid10.linge3.chow[1];}
+                if(data_grid10.linge3.box[2]==BOX_R_RED){
+                    data_grid10.linge4.box[2]=BOX_R_RED;data_grid10.linge4.chow[2]=data_grid10.linge3.chow[2];}
+                if(data_grid10.linge3.box[3]==BOX_R_RED){
+                    data_grid10.linge4.box[3]=BOX_R_RED;data_grid10.linge4.chow[3]=data_grid10.linge3.chow[3];}
+                if(data_grid10.linge3.box[4]==BOX_R_RED){
+                    data_grid10.linge4.box[4]=BOX_R_RED;data_grid10.linge4.chow[4]=data_grid10.linge3.chow[4];}
+                if(data_grid10.linge3.box[5]==BOX_R_RED){
+                    data_grid10.linge4.box[5]=BOX_R_RED;data_grid10.linge4.chow[5]=data_grid10.linge3.chow[5];}
+                if(data_grid10.linge3.box[6]==BOX_R_RED){
+                    data_grid10.linge4.box[6]=BOX_R_RED;data_grid10.linge4.chow[6]=data_grid10.linge3.chow[6];}
+                if(data_grid10.linge3.box[7]==BOX_R_RED){
+                    data_grid10.linge4.box[7]=BOX_R_RED;data_grid10.linge4.chow[7]=data_grid10.linge3.chow[7];}
+                if(data_grid10.linge1.box[8]==BOX_R_RED){
+                    data_grid10.linge4.box[8]=BOX_R_RED;data_grid10.linge4.chow[8]=data_grid10.linge1.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge4.text,data_grid10.linge4.chow,data_grid10.linge4.box,10);
+            break;
+        case 5 :
+            if(prev==0){
+                data_grid10.linge5.box[1]=BOX_R_RED;
+                data_grid10.linge5.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge5.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge5.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge4.box[0]==BOX_R_RED){
+                    data_grid10.linge5.box[0]=BOX_R_RED;data_grid10.linge5.chow[0]=data_grid10.linge4.chow[0];}
+                if(data_grid10.linge4.box[1]==BOX_R_RED){
+                    data_grid10.linge5.box[1]=BOX_R_RED;data_grid10.linge5.chow[1]=data_grid10.linge4.chow[1];}
+                if(data_grid10.linge4.box[2]==BOX_R_RED){
+                    data_grid10.linge5.box[2]=BOX_R_RED;data_grid10.linge5.chow[2]=data_grid10.linge4.chow[2];}
+                if(data_grid10.linge4.box[3]==BOX_R_RED){
+                    data_grid10.linge5.box[3]=BOX_R_RED;data_grid10.linge5.chow[3]=data_grid10.linge4.chow[3];}
+                if(data_grid10.linge4.box[4]==BOX_R_RED){
+                    data_grid10.linge5.box[4]=BOX_R_RED;data_grid10.linge5.chow[4]=data_grid10.linge4.chow[4];}
+                if(data_grid10.linge4.box[5]==BOX_R_RED){
+                    data_grid10.linge5.box[5]=BOX_R_RED;data_grid10.linge5.chow[5]=data_grid10.linge4.chow[5];}
+                if(data_grid10.linge4.box[6]==BOX_R_RED){
+                    data_grid10.linge5.box[6]=BOX_R_RED;data_grid10.linge5.chow[6]=data_grid10.linge4.chow[6];}
+                if(data_grid10.linge4.box[7]==BOX_R_RED){
+                    data_grid10.linge5.box[7]=BOX_R_RED;data_grid10.linge5.chow[7]=data_grid10.linge4.chow[7];}
+                if(data_grid10.linge4.box[8]==BOX_R_RED){
+                    data_grid10.linge5.box[8]=BOX_R_RED;data_grid10.linge5.chow[8]=data_grid10.linge4.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge5.text,data_grid10.linge5.chow,data_grid10.linge5.box,10);
+            break;
+        case 6 :
+            if(prev==0){
+                data_grid10.linge6.box[1]=BOX_R_RED;
+                data_grid10.linge6.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge6.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge6.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge5.box[0]==BOX_R_RED){
+                    data_grid10.linge6.box[0]=BOX_R_RED;data_grid10.linge6.chow[0]=data_grid10.linge5.chow[0];}
+                if(data_grid10.linge5.box[1]==BOX_R_RED){
+                    data_grid10.linge6.box[1]=BOX_R_RED;data_grid10.linge6.chow[1]=data_grid10.linge5.chow[1];}
+                if(data_grid10.linge5.box[2]==BOX_R_RED){
+                    data_grid10.linge6.box[2]=BOX_R_RED;data_grid10.linge6.chow[2]=data_grid10.linge5.chow[2];}
+                if(data_grid10.linge5.box[3]==BOX_R_RED){
+                    data_grid10.linge6.box[3]=BOX_R_RED;data_grid10.linge6.chow[3]=data_grid10.linge5.chow[3];}
+                if(data_grid10.linge5.box[4]==BOX_R_RED){
+                    data_grid10.linge6.box[4]=BOX_R_RED;data_grid10.linge6.chow[4]=data_grid10.linge5.chow[4];}
+                if(data_grid10.linge5.box[5]==BOX_R_RED){
+                    data_grid10.linge6.box[5]=BOX_R_RED;data_grid10.linge6.chow[5]=data_grid10.linge5.chow[5];}
+                if(data_grid10.linge5.box[6]==BOX_R_RED){
+                    data_grid10.linge6.box[6]=BOX_R_RED;data_grid10.linge6.chow[6]=data_grid10.linge5.chow[6];}
+                if(data_grid10.linge5.box[7]==BOX_R_RED){
+                    data_grid10.linge6.box[7]=BOX_R_RED;data_grid10.linge6.chow[7]=data_grid10.linge5.chow[7];}
+                if(data_grid10.linge5.box[8]==BOX_R_RED){
+                    data_grid10.linge6.box[8]=BOX_R_RED;data_grid10.linge6.chow[8]=data_grid10.linge5.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge6.text,data_grid10.linge6.chow,data_grid10.linge6.box,10);
+            break;
+        case 7 :
+            if(prev==0){
+                data_grid10.linge7.box[1]=BOX_R_RED;
+                data_grid10.linge7.chow[1]=txt_to_chow(playing_data10.generated,1);
+                data_grid10.linge7.box[NBR_L_10-2]=BOX_R_RED;
+                data_grid10.linge7.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
+                if(data_grid10.linge6.box[0]==BOX_R_RED){
+                    data_grid10.linge7.box[0]=BOX_R_RED;data_grid10.linge7.chow[0]=data_grid10.linge6.chow[0];}
+                if(data_grid10.linge6.box[1]==BOX_R_RED){
+                    data_grid10.linge7.box[1]=BOX_R_RED;data_grid10.linge7.chow[1]=data_grid10.linge6.chow[1];}
+                if(data_grid10.linge6.box[2]==BOX_R_RED){
+                    data_grid10.linge7.box[2]=BOX_R_RED;data_grid10.linge7.chow[2]=data_grid10.linge6.chow[2];}
+                if(data_grid10.linge6.box[3]==BOX_R_RED){
+                    data_grid10.linge7.box[3]=BOX_R_RED;data_grid10.linge7.chow[3]=data_grid10.linge6.chow[3];}
+                if(data_grid10.linge6.box[4]==BOX_R_RED){
+                    data_grid10.linge7.box[4]=BOX_R_RED;data_grid10.linge7.chow[4]=data_grid10.linge6.chow[4];}
+                if(data_grid10.linge6.box[5]==BOX_R_RED){
+                    data_grid10.linge7.box[5]=BOX_R_RED;data_grid10.linge7.chow[5]=data_grid10.linge6.chow[5];}
+                if(data_grid10.linge6.box[7]==BOX_R_RED){
+                    data_grid10.linge7.box[7]=BOX_R_RED;data_grid10.linge7.chow[7]=data_grid10.linge6.chow[7];}
+                if(data_grid10.linge6.box[8]==BOX_R_RED){
+                    data_grid10.linge7.box[8]=BOX_R_RED;data_grid10.linge7.chow[8]=data_grid10.linge6.chow[8];}
+            }
+                prev=1;
+            player_input(renderer ,data_grid10.linge7.text,data_grid10.linge7.chow,data_grid10.linge7.box,10);
+            break;
+        case 8 :
+                game.state=GAME_OVER_STATE;
+                game_over(renderer,0,playing_data10.generated);
+            break;
 
-
-
+    
+    }
+}
 
 ///////////////////////////////////////////
 
@@ -1047,21 +1667,71 @@ void render_play_as_gest(SDL_Renderer *renderer){
                 game.state=PLAYING_PARAMETERS_STATE;
                 menu.select=NOT_SELECTED;
                 menu.hover=NOT_SELECTED;
-                user.score=699;
+                login_data.score=0;
+}
+
+
+
+
+void  reset_data(){
+// empty all grids :
+data_grid6 = new6;
+data_grid7 = new7;
+data_grid8 = new8;
+data_grid9 = new9;
+// empty game options ;
+game_options.select=0;
+game_options.nbr_letters=0;
+game_options.nbr_time=20;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////:////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////:
 ////////////////////////////////////////////////////////////////////////////////////////////////:
 
+void game_over(SDL_Renderer* renderer,int pop,char* word){
+    SDL_Event event;
+    while(running && game.state==GAME_OVER_STATE){
+        while(SDL_PollEvent(&event)){
+        switch(event.type){
+            case SDL_QUIT:
+                running = false; break;// X botton XD
+             
+            case SDL_MOUSEBUTTONDOWN:
+                 // if mouse inside botton borders + botton click => SELECTED
+                break;
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.scancode){
+                    case SDL_SCANCODE_ESCAPE:
+                        reset_data(); // Escape + return keys => return to menu
+                        game.state=PLAYING_PARAMETERS_STATE;
+                        break;
+                    }
+}       
+        }
 
+        SDL_RenderClear(renderer);
 
+        switch(pop){
+                case 1 :
+                    render_on_xy(WON_BG,renderer,0,0);
+                    render_text_on_xy(renderer,word,370,500,white);
+                    break;
+                case 0 :
+                    render_on_xy(LOSE_BG,renderer,0,0);
+                    render_text_on_xy(renderer,word,370,500,white); 
+                    break;
+        }
+    SDL_RenderPresent(renderer);
+                }
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void playing_loop(SDL_Renderer *renderer){
 
         SDL_Event event;
-    while(running && game.state==PLAYING_STATE)
-    {
+    while(running && game.state==PLAYING_STATE){
         // Process events
         while(SDL_PollEvent(&event))
         {
@@ -1072,7 +1742,7 @@ void playing_loop(SDL_Renderer *renderer){
                 running = false; break;// X botton XD
              
             case SDL_MOUSEBUTTONDOWN:
-                 // if mouse inside botton borders + botton click => SELECTED
+                game_options.select = game_options.hover; // if mouse inside botton borders + botton click => SELECTED
                 break;
             case SDL_KEYDOWN:
                 switch (event.key.keysym.scancode){
@@ -1082,7 +1752,6 @@ void playing_loop(SDL_Renderer *renderer){
                     }
 }       
         }
-
         SDL_RenderClear(renderer);
         render_game_menu(renderer);
         switch(game_options.nbr_letters){
@@ -1090,36 +1759,61 @@ void playing_loop(SDL_Renderer *renderer){
                     render_empty_grid6(renderer);
                     input_data6(renderer);
                     render_data6(renderer);
-                        break;
-        
-          // Show what was drawn
-    }
-    
+                    break;
+                case NBR_L_7 :
+                    render_empty_grid7(renderer);
+                    input_data7(renderer);
+                    render_data7(renderer);
+                    break;
+                case NBR_L_8 :
+                    render_empty_grid8(renderer);
+                    input_data8(renderer);
+                    render_data8(renderer);
+                    break;
+                case NBR_L_9 :
+                    render_empty_grid9(renderer);
+                    input_data9(renderer);
+                    render_data9(renderer);
+                    break;
+              case NBR_L_10 :
+                    render_empty_grid10(renderer);
+                    input_data10(renderer);
+                    render_data10(renderer);
+                    break;
+    }        
+        switch(game_options.select) {
+            case RESET_SELECTED :
+                    game_options.select=0;
+                    game_options.nbr_letters=6;
+                    game_options.nbr_time=0;
+                    game.state=PLAYING_PARAMETERS_STATE;
+                    game_options.hover=0;
+                    prev=0;
+                    reset_data();
+                break;  
+            case LOGOUT_SELECTED:
+                game_options.select=0;
+                game_options.nbr_letters=6;
+                game.state=MENU_STATE;
+                game_options.select=NOT_SELECTED;
+                game_options.hover=0;
+                prev=0;
+                reset_data();
+                break;
+            }
+    render_time(renderer);
+    render_score(renderer);
     SDL_RenderPresent(renderer);
-
-
-
-                }
-        //player_input(renderer ,linge9_1.text,linge9_1.chow,linge9_1.box, 1);
-    //render_linge9(renderer,linge9_1,LN_1);
-    //render_linge_text9(renderer,linge9_1,LN_1);
-
-        
+    }
 }
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////:
 ////////////////////////////////////////////////////////////////////////////////////////////////:
 ////////////////////////////////////////////////////////////////////////////////////////////////:
 
 
 void render_time(SDL_Renderer* renderer){
-    
-
-    int i = game_options.nbr_time;
     char str[10];
-    sprintf(str, "%d", i);
+    sprintf(str, "%d", temps);
     // Now str contains the integer as characters
 
     TTF_Init();
@@ -1138,13 +1832,10 @@ void render_time(SDL_Renderer* renderer){
 }
 
 void render_score(SDL_Renderer* renderer){
-    
-
-    int i = user.score;
+    int i = login_data.score;
     char str[10];
     sprintf(str, "%d", i);
     // Now str contains the integer as characters
-
     TTF_Init();
     TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 32);
     SDL_Rect dest;
@@ -1161,34 +1852,16 @@ void render_score(SDL_Renderer* renderer){
 }
 
 
-
-
-
-
-
-
 void render_options(SDL_Renderer* renderer){
     switch(game_options.nbr_letters){
-        case NBR_L_6 :
-            render_empty_grid6(renderer);
-            break;
-        case NBR_L_7 :
-            render_empty_grid7(renderer);
-            break;
-        case NBR_L_8 :
-            render_empty_grid8(renderer);
-            break;
-        case NBR_L_9 :
-            render_empty_grid9(renderer);
-            break;
-        case NBR_L_10 :
-            render_empty_grid10(renderer);
-            break;
+        case NBR_L_6 : render_empty_grid6(renderer); break;
+        case NBR_L_7 :render_empty_grid7(renderer); break;
+        case NBR_L_8 : render_empty_grid8(renderer); break;
+        case NBR_L_9 : render_empty_grid9(renderer); break;
+        case NBR_L_10 :render_empty_grid10(renderer); break;
     }
-
         render_time(renderer);
         render_score(renderer);
-
 }
 
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -1254,13 +1927,9 @@ void menu_loop(SDL_Renderer *renderer){
     }
     
 }
-
-
 // game state loop ; 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void game_loop(SDL_Renderer *renderer){
-    int magic;
      //loop
     SDL_Event event;
     while(running && game.state==PLAYING_PARAMETERS_STATE )
@@ -1285,9 +1954,6 @@ void game_loop(SDL_Renderer *renderer){
                     }
         }
 
-       
-
-       
         SDL_RenderClear(renderer);
     switch(game_options.select) {
             case NOT_SELECTED:
@@ -1297,18 +1963,24 @@ void game_loop(SDL_Renderer *renderer){
                     game_options.select=NOT_SELECTED;
                     game.state=PLAYING_STATE;
                     pass=1;
+                    i=0;
                  break;
             case RESET_SELECTED :
-                    // reset
+                    game_options.select=0;
+                    game_options.nbr_letters=6;
+                    game_options.nbr_time=20;
+                    prev=0;
+                    reset_data();
                 break;  
             case LOGOUT_SELECTED:
                 game.state=MENU_STATE;
                 game_options.select=NOT_SELECTED;
                 game_options.hover=0;
+                prev=0;
+                reset_data();
                 break;
             case NBR_6_SELECTED :
                 game_options.nbr_letters=NBR_L_6; 
-                magic = indice(NBR_L_6);
                 FILE* f6=ouvertureFichier(NBR_L_6);
                 generationMot(f6,playing_data6.generated);
                 printf("%s\n", playing_data6.generated);
@@ -1318,74 +1990,54 @@ void game_loop(SDL_Renderer *renderer){
                 game_options.nbr_letters=NBR_L_7;
                 FILE* f7=ouvertureFichier(NBR_L_7);
                 generationMot(f7,playing_data7.generated);
-                data_grid7.linge1.box[1]=BOX_R_RED;
-                data_grid7.linge1.chow[1]=txt_to_chow(playing_data7.generated,1);
-                data_grid7.linge1.box[NBR_L_7-2]=BOX_R_RED;
-                data_grid7.linge1.chow[NBR_L_7-2]=txt_to_chow(playing_data7.generated,NBR_L_7-2);
                 fclose(f7);
                 break;
             case NBR_8_SELECTED :
                 game_options.nbr_letters=NBR_L_8;
                 FILE* f8=ouvertureFichier(NBR_L_8);
                 generationMot(f8,playing_data8.generated);
-                data_grid8.linge1.box[1]=BOX_R_RED;
-                data_grid8.linge1.chow[1]=txt_to_chow(playing_data8.generated,1);
-                data_grid8.linge1.box[NBR_L_8-2]=BOX_R_RED;
-                data_grid8.linge1.chow[NBR_L_8-2]=txt_to_chow(playing_data8.generated,NBR_L_8-2);
                 fclose(f8);
                 break;
             case NBR_9_SELECTED :
                 game_options.nbr_letters=NBR_L_9;
                 FILE* f9=ouvertureFichier(NBR_L_9);
                 generationMot(f9,playing_data9.generated);
-                data_grid9.linge1.box[1]=BOX_R_RED;
-                data_grid9.linge1.chow[1]=txt_to_chow(playing_data9.generated,1);
-                data_grid9.linge1.box[NBR_L_9-2]=BOX_R_RED;
-                data_grid9.linge1.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
                 fclose(f9);
                 break;
             case NBR_10_SELECTED :
                 game_options.nbr_letters=NBR_L_10;
                 FILE* f10=ouvertureFichier(NBR_L_10);
                 generationMot(f10,playing_data10.generated);
-                data_grid10.linge1.box[1]=BOX_R_RED;
-                data_grid10.linge1.chow[1]=txt_to_chow(playing_data10.generated,1);
-                data_grid10.linge1.box[NBR_L_10-2]=BOX_R_RED;
-                data_grid10.linge1.chow[NBR_L_10-2]=txt_to_chow(playing_data10.generated,NBR_L_10-2);
                 fclose(f10);
                 break;
 
             case TIME_10_SELECTED :
                 game_options.nbr_time=TIME_L_10;
+                temps=10;
                 break;
             case TIME_15_SELECTED :
                 game_options.nbr_time=TIME_L_15;
+                temps=15;
                 break;
             case TIME_20_SELECTED :
                 game_options.nbr_time=TIME_L_20;
+                temps=20;
                 break;
 
 
 }
                  }
-
-        
     render_game_menu(renderer);
     render_options(renderer);
     SDL_RenderPresent(renderer);
-
-
-
     }
 }
 
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////:
-//////////////////////////////////////////////////////////////://////////////////////////////////////////////////////////////:
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void main_loop(SDL_Renderer *renderer){
     
     SDL_Event event;
@@ -1402,8 +2054,6 @@ void main_loop(SDL_Renderer *renderer){
 }
 }
 
-
-
         SDL_RenderClear(renderer);
         switch (game.state){
             case MENU_STATE : 
@@ -1414,7 +2064,6 @@ void main_loop(SDL_Renderer *renderer){
                 break;
             case PLAYING_STATE:
                 playing_loop(renderer);
-
         }  
         SDL_RenderPresent(renderer); 
 }
