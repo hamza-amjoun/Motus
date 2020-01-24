@@ -253,4 +253,39 @@ void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
             render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
-////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////$
+
+
+// render box text : 
+void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
+    switch (boxCH){
+        case A:render_on_xy(A_R,renderer,x,y);break;
+        case B:render_on_xy(B_R,renderer,x,y);break;
+        case C:render_on_xy(C_R,renderer,x,y);break;
+        case D:render_on_xy(D_R,renderer,x,y);break;
+        case E:render_on_xy(E_R,renderer,x,y);break;
+        case F:render_on_xy(F_R,renderer,x,y);break;
+        case G:render_on_xy(G_R,renderer,x,y);break;
+        case H:render_on_xy(H_R,renderer,x,y);break;
+        case I:render_on_xy(I_R,renderer,x,y);break;
+        case J:render_on_xy(J_R,renderer,x,y);break;
+        case K:render_on_xy(K_R,renderer,x,y);break;
+        case L:render_on_xy(L_R,renderer,x,y);break;
+        case M:render_on_xy(M_R,renderer,x,y);break;
+        case N:render_on_xy(N_R,renderer,x,y);break;
+        case O:render_on_xy(O_R,renderer,x,y);break;
+        case P:render_on_xy(P_R,renderer,x,y);break;
+        case Q:render_on_xy(Q_R,renderer,x,y);break;
+        case R:render_on_xy(R_R,renderer,x,y);break;
+        case S:render_on_xy(S_R,renderer,x,y);break;
+        case T:render_on_xy(T_R,renderer,x,y);break;
+        case U:render_on_xy(U_R,renderer,x,y);break;
+        case V:render_on_xy(V_R,renderer,x,y);break;
+        case W:render_on_xy(W_R,renderer,x,y);break;
+        case X:render_on_xy(X_R,renderer,x,y);break;
+        case Y:render_on_xy(Y_R,renderer,x,y);break;
+        case Z:render_on_xy(Z_R,renderer,x,y);break;
+    }
+}
+
+

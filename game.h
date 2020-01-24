@@ -267,10 +267,13 @@ typedef struct {
 	int reds_box[10]; // the reviled boxes BG here
 } data_grid10_;
 
-
 typedef struct{
-	char id[25];
-	int score;
+    char id[25];
+    int score;
 }topPlayer;
+typedef struct{
+    char ligne[40];
+}affichageTop;
+
 
 #endif  // GAME_H_

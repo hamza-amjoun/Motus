@@ -28,7 +28,7 @@ void render_top_players(SDL_Renderer *renderer);
 void reset_data();
 
 
-void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y);
+
 
 void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters);
 

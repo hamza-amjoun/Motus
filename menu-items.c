@@ -5,32 +5,24 @@
 #include <ctype.h>
 #include <time.h>
 #include <math.h>
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
-
 #include "game.h"
 #include "logic.h"
 #include "menu-items.h"	
 #include "rendering.h"
 
-char *m;
 login_txt_ login_data;
 singup_txt_ singup_data;
 bool running = true;
-
 int i=0;
 char hide[25];
-
-
 int input_state = 1;
-
 int temps=20;
 int tempsActuel;
 int tempsPrecedent;
-// struct menu initialisation
-menu_ menu = {.select=0,.hover = 0,.input_state = 1};
+menu_ menu = {.select=0,.hover = 0,.input_state = 1};// struct menu initialisation
 
 playing_data6_ playing_data6;
 playing_data7_ playing_data7;
@@ -38,12 +30,11 @@ playing_data8_ playing_data8;
 playing_data9_ playing_data9;
 playing_data10_ playing_data10;
 
-game_options_ game_options = {.select=0,.hover = 0,.nbr_letters=6,.nbr_time=20,};
+game_options_ game_options = {.select=0,.hover = 0,.nbr_letters=0,.nbr_time=20,};
 
-/// game state
-game_ game= {.state= MENU_STATE,};
-// player data :
-singup_txt_ singup_player;
+game_ game= {.state= MENU_STATE,};/// game state
+singup_txt_ singup_player;// player data :
+
 // empty linges data for rundring :
 linge6_ empty_linge6 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,};
 linge7_ empty_linge7 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1};
@@ -68,13 +59,11 @@ data_grid10_ new10;
 
 int pass=1;
 int prev=0;
-
-
-                                                                /////////////////////////////:
-                                            ////////////////////
-////////////////////////////////////////////                            ////////////////////////////
-
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char* tochar(int i,char* str){
+  sprintf(str, "%d", i);
+  return str;
+}
 void swap(topPlayer *a, topPlayer *b) 
 { 
     topPlayer temp;
@@ -92,21 +81,20 @@ int empty(char* filename, char* mode){
 int existe(login_txt_ player){
     FILE* f=fopen("data/players.bin","rb");
     login_txt_ user;
-    while(!feof(f)){
+    while(1){
         fread(&user,sizeof(user),1,f);
+        if(feof(f)) break;
         if(strcmp(user.id,player.id)==0) return 1;
     }
     fclose(f);
     return 0;
 }
-
-
 int signup(singup_txt_ player){
     int signup;
+    player.score=0;
     FILE* f=fopen("data/players.bin","ab");
     if(!f) return 0;
     if(empty("data/players.bin","ab+")==1){
-        player.score=0;
         fwrite(&player,sizeof(player),1,f);
         signup=1;
     }
@@ -114,13 +102,11 @@ int signup(singup_txt_ player){
         login_txt_ user;
         strcpy(user.id,player.id);strcpy(user.passwd,player.passwd);user.score=0;
         if(existe(user)==0) {fwrite(&player,sizeof(player),1,f); signup=1;}
-        else {SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"Oops!!"," already exists , try another ID :(",NULL);signup=0;}//notification ;
+        else {/*printf("existe déjà\n");*/signup=0;}//notification ;
     }
     fclose(f);
     return signup;
 }
-
-
 int login(login_txt_ player){
     FILE* f= fopen("data/players.bin","rb");
     if(!f) {printf("Erreur ouverture fichier\n"); exit(0);}
@@ -133,30 +119,32 @@ void topPlayers(login_txt_ player,int score){
     }else{
         fseek(f,0L,SEEK_SET);
         topPlayer *top=(topPlayer*)malloc(sizeof(topPlayer)*11); 
-        int i=0,existe=0;
-        while(!feof(f)){
+        int i=0,existe=0,k,j;
+        while(1){
             fscanf(f,"%s%d",top[i].id,&top[i].score);
+            if(feof(f)) break;
             i++;
         }
-        i--;
+        fclose(f);
         remove("data/topPlayers.txt");
-        printf("%d\n",i);
-        for (int j = 0; j<i ;j++){ if(strcmp(top[j].id,player.id)==0){top[j].score=score;existe=1;}}
+        for ( j = 0; j<i ;j++) if(strcmp(top[j].id,player.id)==0){top[j].score=score;existe=1;break;}
         if(existe==0){strcpy(top[i].id,player.id);top[i].score=score;}
-        for (int j=0;j<i-1;j++){
-            for(int k=j+1;k<i;k++){
+        for (j=0;j<i-1;j++){
+            for(k=j+1;k<i;k++){
                 if(top[j].score>top[k].score) swap(&top[j],&top[k]);
             }
         }
-        FILE* fp=fopen("data/topPlayers.txt","a+");
-        if(!fp) printf("erreur\n");
+        FILE* f=fopen("data/topPlayers.txt","a+");
+        if(!f) printf("erreur\n");
         while(i>-1){
-            fprintf(fp,"%s %d\n",top[i].id,top[i].score);
+            if(strcmp(top[i].id,"0")!=0 && top[i].score!=0) fprintf(f,"%s %d\n",top[i].id,top[i].score);
             i--;
+
         }
+        fclose(f);
     }
 }
-int score(login_txt_ player,game_options_ opt){
+void score(login_txt_ player,game_options_ opt){
     int pourcentage,score;
     switch(opt.nbr_time){
         case 10: pourcentage=5;break;
@@ -166,27 +154,56 @@ int score(login_txt_ player,game_options_ opt){
     score=(10*opt.nbr_letters)-opt.nbr_time;
     score+=(score*pourcentage)/100;
     FILE* f=fopen("data/players.bin","ab+");
+    FILE* n=fopen("data/newfile.bin","ab+");
     rewind(f);
-    if(!f) printf("data/Erreur ouverture\n");
+    if(!f) printf("Erreur ouverture\n");
+    login_data.score+=score;
     login_txt_ user;
-    while(!feof(f)){
+    while(1){
         fread(&user,sizeof(user),1,f);
+        if(feof(f)) break;
             if(strcmp(user.id,player.id)==0 && strcmp(user.passwd,player.passwd)==0){
                 user.score+=score;
-                fseek(f,-1L*sizeof(user),SEEK_CUR);
-                fwrite(&user,sizeof(user),1,f);
-                fclose(f);
+                fwrite(&user,sizeof(user),1,n);
                 topPlayers(user,user.score);
-                return 1;
+            }else{
+                fwrite(&user,sizeof(user),1,n);
             }   
     }
+    rename("data/newfile.bin","data/players.bin");
+    fclose(n);
     fclose(f);
-    return 0;
+}
+void showTop(){
+    FILE* f=fopen("data/topPlayers.txt","r");
+    if(!f) exit(-1);
+    fseek(f,0L,SEEK_SET);
+    char str[20];
+    affichageTop *affichage=(affichageTop*)malloc(sizeof(affichage)*10);
+    topPlayer *top=(topPlayer*)malloc(sizeof(topPlayer)*11); 
+    int i=0,k,j;
+    while(!feof(f)){
+        fscanf(f,"%s%d",top[i].id,&top[i].score);
+        i++;
+    }
+    i--;
+    fclose(f);
+    for (j=0;j<i-1;j++){
+        for(k=j+1;k<i;k++){
+            if(top[j].score>top[k].score) swap(&top[j],&top[k]);
+        }
+    }
+    j=0;
+    while(i>-1){
+        if(strcmp(top[i].id,"0")!=0 && top[i].score!=0){char tempo[40];strcpy(tempo,top[i].id);strcat(tempo," ");strcat(tempo,tochar(top[i].score,str));strcpy(affichage[j].ligne,tempo);j++;}i--;
+    }
+    for (int i = 0; i < j; i++)
+    {
+        printf("%s\n",affichage[i].ligne );
+
+    }
 }
 
-
-
-//////////////////////////////////
 //génération aléatoire d'un mot
 char* generationMot(FILE* f, char*mot){
     
@@ -262,9 +279,6 @@ FILE* ouvertureFichier(int nblettres){
     if(!f) {printf("erreur ouverture du fichier");exit(-1);}
     return f;
 }
-
-
-
 int motFrancais(char *mot,int nblettres){
     FILE* f=ouvertureFichier(nblettres);
     char c;
@@ -279,12 +293,8 @@ int motFrancais(char *mot,int nblettres){
     }
     printf("n'appartient pas\n");
     return 0;
-
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 void reset_input(){
     i=0;
     while(i<25){
@@ -294,7 +304,6 @@ void reset_input(){
         singup_data.passwd[i]=0;
         i++;
     }
-
     menu.input_state=1;
 }
 
@@ -331,7 +340,6 @@ void login_txt_input(SDL_Renderer* renderer,char* text){
         render_text_on_xy(renderer,text,340,315,black);
 }
 
-
 void login_passwd_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
     SDL_Event event;
@@ -364,21 +372,15 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
                             SDL_StopTextInput();
                         }
                         break;
-
                 }
         }
-    
-
-    }
-       
+    }  
         render_text_on_xy(renderer,login_data.id,340,315,black);
-        
         i=0;
         while(i<strlen(text)){
             hide[i]='*';
             i++;
         }
-
         render_text_on_xy(renderer,hide,340,395,black);       
         i=0;
         while(i<25){
@@ -386,9 +388,6 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
             i++;
         }
 }
-
-
-
 
 void render_login(SDL_Renderer *renderer){
     render_on_xy(LOGIN_BG,renderer,0,0);
@@ -440,7 +439,6 @@ void singup_txt_input(SDL_Renderer* renderer,char* text){
 render_text_on_xy(renderer,text,340,315,black);
 }
 
-
 void singup_passwd_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
     SDL_Event event;
@@ -468,7 +466,6 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text){
                         strcpy(singup_data.passwd,"");
                         SDL_StopTextInput();
                         break;
-
                 }
         }
     }
@@ -509,7 +506,19 @@ void render_singup(SDL_Renderer *renderer){
 
 void render_top_players(SDL_Renderer *renderer){
     render_on_xy(TOP_PLAYERS_BG,renderer,0,0);
-    
+    int ne=80;
+    render_text_on_xy(renderer,"player_1 999",132,167,white);
+    render_text_on_xy(renderer,"player_2 999",132,167+ne,white);
+    render_text_on_xy(renderer,"player_3 999",132,167+2*ne,white);
+    render_text_on_xy(renderer,"player_4 999",132,167+3*ne,white);
+    render_text_on_xy(renderer,"player_5 999",132,167+4*ne,white);
+    render_text_on_xy(renderer,"player_6 999",500,167,white);
+    render_text_on_xy(renderer,"player_7 999",500,167+ne,white);
+    render_text_on_xy(renderer,"player_8 999",500,167+2*ne,white);
+    render_text_on_xy(renderer,"player_9 999",500,167+3*ne,white);
+    render_text_on_xy(renderer,"player_10 999",500,167+4*ne,white);
+    showTop();
+
 }
 
 
@@ -594,40 +603,6 @@ void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
     }
 }
 
-
-// render box text : 
-void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
-    switch (boxCH){
-        case A:render_on_xy(A_R,renderer,x,y);break;
-        case B:render_on_xy(B_R,renderer,x,y);break;
-        case C:render_on_xy(C_R,renderer,x,y);break;
-        case D:render_on_xy(D_R,renderer,x,y);break;
-        case E:render_on_xy(E_R,renderer,x,y);break;
-        case F:render_on_xy(F_R,renderer,x,y);break;
-        case G:render_on_xy(G_R,renderer,x,y);break;
-        case H:render_on_xy(H_R,renderer,x,y);break;
-        case I:render_on_xy(I_R,renderer,x,y);break;
-        case J:render_on_xy(J_R,renderer,x,y);break;
-        case K:render_on_xy(K_R,renderer,x,y);break;
-        case L:render_on_xy(L_R,renderer,x,y);break;
-        case M:render_on_xy(M_R,renderer,x,y);break;
-        case N:render_on_xy(N_R,renderer,x,y);break;
-        case O:render_on_xy(O_R,renderer,x,y);break;
-        case P:render_on_xy(P_R,renderer,x,y);break;
-        case Q:render_on_xy(Q_R,renderer,x,y);break;
-        case R:render_on_xy(R_R,renderer,x,y);break;
-        case S:render_on_xy(S_R,renderer,x,y);break;
-        case T:render_on_xy(T_R,renderer,x,y);break;
-        case U:render_on_xy(U_R,renderer,x,y);break;
-        case V:render_on_xy(V_R,renderer,x,y);break;
-        case W:render_on_xy(W_R,renderer,x,y);break;
-        case X:render_on_xy(X_R,renderer,x,y);break;
-        case Y:render_on_xy(Y_R,renderer,x,y);break;
-        case Z:render_on_xy(Z_R,renderer,x,y);break;
-    }
-}
-
-
 void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters){
 
                     tempsActuel = SDL_GetTicks();
@@ -650,11 +625,6 @@ void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_
                                running = false; break;
                         case SDL_KEYDOWN: // Spesial keys cases
                             switch (event.key.keysym.scancode){ 
-                                
-                                case SDL_SCANCODE_ESCAPE: // go back
-                                    //menu.select=NOT_SELECTED;
-                                    //reset_input();
-                                    break;
                                 case SDL_SCANCODE_BACKSPACE: // del last element :
                                     text[i-1]=0;chow[i-1]=0;box[i-1]=BOX_R_BLACK; i--; break;
                                  case SDL_SCANCODE_RETURN:
@@ -666,7 +636,6 @@ void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_
                                                 game_over(renderer,1,text);
                                             }
                                             verification(playing_data6.generated,text,box);
-
                                         }
                                     pass++;// move to next linge
                                     i=0; // rest typing cursur place
@@ -704,9 +673,6 @@ void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_
         }
     }
 }
-
-
-
 // empty  grids :
 void render_empty_grid6(SDL_Renderer *renderer){
     render_linge6(renderer,empty_linge6,LN_1);render_linge6(renderer,empty_linge6,LN_2);
@@ -937,9 +903,7 @@ void input_data6(SDL_Renderer* renderer){
         case 8 :
                 game.state=GAME_OVER_STATE;
                 game_over(renderer,0,playing_data6.generated);
-            break;
-
-    
+            break;    
     }
 }
 
@@ -975,7 +939,6 @@ void input_data7(SDL_Renderer* renderer){
                     data_grid7.linge2.box[5]=BOX_R_RED;data_grid7.linge2.chow[5]=data_grid7.linge1.chow[5];}
                 if(data_grid7.linge1.box[6]==BOX_R_RED){
                     data_grid7.linge2.box[6]=BOX_R_RED;data_grid7.linge2.chow[6]=data_grid7.linge1.chow[6];}
-
                 prev=1;
             }
             player_input(renderer ,data_grid7.linge2.text,data_grid7.linge2.chow,data_grid7.linge2.box,7);
@@ -1106,7 +1069,7 @@ void input_data7(SDL_Renderer* renderer){
             break;
     }
 }
-
+// take input for case 8:
 void input_data8(SDL_Renderer* renderer){
     switch(pass){
         case 1 :
@@ -1278,13 +1241,8 @@ void input_data8(SDL_Renderer* renderer){
                 game.state=GAME_OVER_STATE;
                 game_over(renderer,0,playing_data8.generated);
             break;
-
-    
     }
 }
-
-
-
 void input_data9(SDL_Renderer* renderer){
     switch(pass){
         case 1 :
@@ -1293,8 +1251,7 @@ void input_data9(SDL_Renderer* renderer){
                 data_grid9.linge1.chow[1]=txt_to_chow(playing_data9.generated,1);
                 data_grid9.linge1.box[NBR_L_9-2]=BOX_R_RED;
                 data_grid9.linge1.chow[NBR_L_9-2]=txt_to_chow(playing_data9.generated,NBR_L_9-2);
-               prev=1;
-           }
+               prev=1;}
             player_input(renderer ,data_grid9.linge1.text,data_grid9.linge1.chow,data_grid9.linge1.box,9);
             break;
         case 2 :
@@ -1321,8 +1278,7 @@ void input_data9(SDL_Renderer* renderer){
                     data_grid9.linge2.box[7]=BOX_R_RED;data_grid9.linge2.chow[7]=data_grid9.linge1.chow[7];}
                 if(data_grid9.linge1.box[8]==BOX_R_RED){
                     data_grid9.linge2.box[8]=BOX_R_RED;data_grid9.linge2.chow[8]=data_grid9.linge1.chow[8];}
-                prev=1;
-            }
+                prev=1;}
             player_input(renderer ,data_grid9.linge2.text,data_grid9.linge2.chow,data_grid9.linge2.box,9);
             break;
         case 3 :
@@ -1467,8 +1423,6 @@ void input_data9(SDL_Renderer* renderer){
                 game.state=GAME_OVER_STATE;
                 game_over(renderer,0,playing_data9.generated);
             break;
-
-    
     }
 }
 
@@ -1654,14 +1608,9 @@ void input_data10(SDL_Renderer* renderer){
                 game.state=GAME_OVER_STATE;
                 game_over(renderer,0,playing_data10.generated);
             break;
-
-    
     }
 }
-
 ///////////////////////////////////////////
-
-
 void render_play_as_gest(SDL_Renderer *renderer){
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"WARNING","Your Progress wont be saved :(",NULL);
                 game.state=PLAYING_PARAMETERS_STATE;
@@ -1669,25 +1618,13 @@ void render_play_as_gest(SDL_Renderer *renderer){
                 menu.hover=NOT_SELECTED;
                 login_data.score=0;
 }
-
-
-
-
 void  reset_data(){
 // empty all grids :
-data_grid6 = new6;
-data_grid7 = new7;
-data_grid8 = new8;
-data_grid9 = new9;
+data_grid6 = new6; data_grid7 = new7; data_grid8 = new8; data_grid9 = new9;
 // empty game options ;
-game_options.select=0;
-game_options.nbr_letters=0;
-game_options.nbr_time=20;
+game_options.select=0; game_options.nbr_letters=0; game_options.nbr_time=20;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////:////////////
-////////////////////////////////////////////////////////////////////////////////////////////////:
-////////////////////////////////////////////////////////////////////////////////////////////////:
-
 void game_over(SDL_Renderer* renderer,int pop,char* word){
     SDL_Event event;
     while(running && game.state==GAME_OVER_STATE){
@@ -1706,9 +1643,8 @@ void game_over(SDL_Renderer* renderer,int pop,char* word){
                         game.state=PLAYING_PARAMETERS_STATE;
                         break;
                     }
-}       
+        }       
         }
-
         SDL_RenderClear(renderer);
 
         switch(pop){
@@ -1724,10 +1660,7 @@ void game_over(SDL_Renderer* renderer,int pop,char* word){
     SDL_RenderPresent(renderer);
                 }
 }
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void playing_loop(SDL_Renderer *renderer){
 
         SDL_Event event;
@@ -1735,8 +1668,6 @@ void playing_loop(SDL_Renderer *renderer){
         // Process events
         while(SDL_PollEvent(&event))
         {
-         
-
         switch(event.type){
             case SDL_QUIT:
                 running = false; break;// X botton XD
@@ -1754,34 +1685,7 @@ void playing_loop(SDL_Renderer *renderer){
         }
         SDL_RenderClear(renderer);
         render_game_menu(renderer);
-        switch(game_options.nbr_letters){
-                case NBR_L_6 :
-                    render_empty_grid6(renderer);
-                    input_data6(renderer);
-                    render_data6(renderer);
-                    break;
-                case NBR_L_7 :
-                    render_empty_grid7(renderer);
-                    input_data7(renderer);
-                    render_data7(renderer);
-                    break;
-                case NBR_L_8 :
-                    render_empty_grid8(renderer);
-                    input_data8(renderer);
-                    render_data8(renderer);
-                    break;
-                case NBR_L_9 :
-                    render_empty_grid9(renderer);
-                    input_data9(renderer);
-                    render_data9(renderer);
-                    break;
-              case NBR_L_10 :
-                    render_empty_grid10(renderer);
-                    input_data10(renderer);
-                    render_data10(renderer);
-                    break;
-    }        
-        switch(game_options.select) {
+                switch(game_options.select) {
             case RESET_SELECTED :
                     game_options.select=0;
                     game_options.nbr_letters=6;
@@ -1801,21 +1705,32 @@ void playing_loop(SDL_Renderer *renderer){
                 reset_data();
                 break;
             }
+        switch(game_options.nbr_letters){
+                case NBR_L_6 :
+                    render_empty_grid6(renderer);input_data6(renderer);render_data6(renderer);
+                    break;
+                case NBR_L_7 :
+                    render_empty_grid7(renderer);input_data7(renderer);render_data7(renderer);
+                    break;
+                case NBR_L_8 :
+                    render_empty_grid8(renderer);input_data8(renderer);render_data8(renderer);
+                    break;
+                case NBR_L_9 :
+                    render_empty_grid9(renderer);input_data9(renderer);render_data9(renderer);
+                    break;
+              case NBR_L_10 :
+                    render_empty_grid10(renderer);input_data10(renderer);render_data10(renderer);
+                    break;
+    }        
     render_time(renderer);
     render_score(renderer);
     SDL_RenderPresent(renderer);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////:
-////////////////////////////////////////////////////////////////////////////////////////////////:
-////////////////////////////////////////////////////////////////////////////////////////////////:
-
-
 void render_time(SDL_Renderer* renderer){
     char str[10];
-    sprintf(str, "%d", temps);
-    // Now str contains the integer as characters
-
+    sprintf(str, "%d", temps);    // Now str contains the integer as characters
     TTF_Init();
     TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 42);
     SDL_Rect dest;
@@ -1828,14 +1743,12 @@ void render_time(SDL_Renderer* renderer){
     SDL_FreeSurface(surface);
     TTF_CloseFont(font);
     TTF_Quit();
-
 }
 
 void render_score(SDL_Renderer* renderer){
     int i = login_data.score;
     char str[10];
-    sprintf(str, "%d", i);
-    // Now str contains the integer as characters
+    sprintf(str, "%d", i);// Now str contains the integer as characters
     TTF_Init();
     TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 32);
     SDL_Rect dest;
@@ -1848,9 +1761,7 @@ void render_score(SDL_Renderer* renderer){
     SDL_FreeSurface(surface);
     TTF_CloseFont(font);
     TTF_Quit();
-
 }
-
 
 void render_options(SDL_Renderer* renderer){
     switch(game_options.nbr_letters){
@@ -1895,10 +1806,7 @@ void menu_loop(SDL_Renderer *renderer){
                         break;
                     }
 }
-
-       
         }
-
         SDL_RenderClear(renderer);
         switch(menu.select) {
             case NOT_SELECTED:
@@ -1919,10 +1827,6 @@ void menu_loop(SDL_Renderer *renderer){
                 render_on_xy(HOW_TO_BG,renderer,0,0);
                 break;
         }
-
-
-
-        
         SDL_RenderPresent(renderer);  // Show what was drawn
     }
     
@@ -1953,7 +1857,6 @@ void game_loop(SDL_Renderer *renderer){
                         break;
                     }
         }
-
         SDL_RenderClear(renderer);
     switch(game_options.select) {
             case NOT_SELECTED:
@@ -2023,8 +1926,6 @@ void game_loop(SDL_Renderer *renderer){
                 game_options.nbr_time=TIME_L_20;
                 temps=20;
                 break;
-
-
 }
                  }
     render_game_menu(renderer);
@@ -2032,28 +1933,16 @@ void game_loop(SDL_Renderer *renderer){
     SDL_RenderPresent(renderer);
     }
 }
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void main_loop(SDL_Renderer *renderer){
-    
     SDL_Event event;
-    while(running)
-    {
-        // Process events
-        while(SDL_PollEvent(&event))
-        {
-         
-
+    while(running){
+        while(SDL_PollEvent(&event)){
         switch(event.type){
             case SDL_QUIT:
                 running = false; break;
-}
-}
-
+        }
+        }
         SDL_RenderClear(renderer);
         switch (game.state){
             case MENU_STATE : 
@@ -2066,5 +1955,5 @@ void main_loop(SDL_Renderer *renderer){
                 playing_loop(renderer);
         }  
         SDL_RenderPresent(renderer); 
-}
+    }
 }

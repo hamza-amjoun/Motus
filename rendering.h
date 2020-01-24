@@ -119,5 +119,7 @@ void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose);
 int txt_to_chow(char* text,int indice);
 
 
+void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y);
+
 #endif  // RENDERING_H_
 
