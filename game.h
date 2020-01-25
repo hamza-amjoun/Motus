@@ -5,6 +5,7 @@
 #define SCREEN_WIDTH  820.0
 #define SCREEN_HEIGHT 600.0
 
+
 // menu selects :
 #define NOT_SELECTED 0
 #define LOGIN_SELECTED 1
@@ -12,6 +13,7 @@
 #define PLAY_AS_GUEST_SELECTED 3
 #define TOP_PLAYERS_SELECTED 4
 #define HOW_TO_PLAY_SELECTED 5
+
 
 // game_menu selects:
 #define NOT_SELECTED 0
@@ -123,8 +125,6 @@ typedef struct {
 	char passwd[25];
 	int score;
 } singup_txt_;
-
-
 
 
 // linge  data : 6

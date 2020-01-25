@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+
 #include "game.h"
 #include "rendering.h"
-#include "logic.h"
 
 
 // (x,y) of players :
@@ -86,7 +87,7 @@ int render_menu(SDL_Renderer *renderer){
 return 0;
 }
 
-
+// render a char inside a box
 void render_text_on_box(SDL_Renderer* renderer,const char* text, int x,int y,SDL_Color color){
     TTF_Init();
     TTF_Font * font = TTF_OpenFont(DEFAULT_FONT, 40);
@@ -162,9 +163,7 @@ void render_linge_text10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
     render_box_text(renderer,linge.chow[9],x+9*BOX,y+(h_pose - 1)*BOX);}
 
 
-
-
-
+// from char to a chow
 int txt_to_chow(char* text,int indice){
     switch(text[indice]){
         case 'A': return A; break;
@@ -197,7 +196,7 @@ int txt_to_chow(char* text,int indice){
 }
 
 
-// render linge ;
+// render linge 6;
 
 void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
             int x=266,y=160;
@@ -208,6 +207,7 @@ void render_linge6(SDL_Renderer *renderer,linge6_ linge,int h_pose){
             render_box(renderer,linge.box[4],x+4*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);}
 
+// render linge 6;
 void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
             int x=266-25,y=160;
             render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
@@ -218,6 +218,7 @@ void render_linge7(SDL_Renderer *renderer,linge7_ linge,int h_pose){
             render_box(renderer,linge.box[5],x+5*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);}
 
+// render linge 6;
 void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
             int x=266-50,y=160;
             render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
@@ -229,6 +230,7 @@ void render_linge8(SDL_Renderer *renderer,linge8_ linge,int h_pose){
             render_box(renderer,linge.box[6],x+6*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);}
 
+// render linge 6;
 void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
             int x=266-75,y=160;
             render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
@@ -241,6 +243,8 @@ void render_linge9(SDL_Renderer *renderer,linge9_ linge,int h_pose){
             render_box(renderer,linge.box[7],x+7*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);}
 
+
+// render linge 6;
 void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
             int x=266-100,y=160;
             render_box(renderer,linge.box[0],x,y+(h_pose - 1)*BOX);
@@ -254,8 +258,6 @@ void render_linge10(SDL_Renderer *renderer,linge10_ linge,int h_pose){
             render_box(renderer,linge.box[8],x+8*BOX,y+(h_pose - 1)*BOX);
             render_box(renderer,linge.box[9],x+9*BOX,y+(h_pose - 1)*BOX);}
 ////////////////////////////////////////////////////////////////////////////////////$
-
-
 // render box text : 
 void render_box_text(SDL_Renderer *renderer,int boxCH,int x,int y){
     switch (boxCH){

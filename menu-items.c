@@ -9,44 +9,40 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include "game.h"
-#include "logic.h"
 #include "menu-items.h"	
 #include "rendering.h"
-
-int sco=0;
-login_txt_ login_data;
-singup_txt_ singup_data;
-bool running = true;
-int i=0;
-char hide[25];
-int input_state = 1;
-int temps=20;
-int tempsActuel;
-int tempsPrecedent;
+// variables needed :
+int sco=0; // see if score added or not yet
+login_txt_ login_data;  // login informations
+singup_txt_ singup_data; // singup info 
+bool running = true; // see if the X botton clicked or not
+int i=0; // enumeration var
+char hide[25]; // used to print a unvisible passwd
+int input_state = 1; // see if there is input or not
+int temps=20; // time initialisation 
+int tempsActuel; // used in timer
+int tempsPrecedent; // usef in timer
 menu_ menu = {.select=0,.hover = 0,.input_state = 1};// struct menu initialisation
-
+// data initialisation 
 playing_data6_ playing_data6;
 playing_data7_ playing_data7;
 playing_data8_ playing_data8;
 playing_data9_ playing_data9;
 playing_data10_ playing_data10;
-
+// game options initialisation :
 game_options_ game_options = {.select=0,.hover = 0,.nbr_letters=0,.nbr_time=20,};
-
 game_ game= {.state= MENU_STATE,};/// game state
 singup_txt_ singup_player;// player data :
-
 // empty linges data for rundring :
 linge6_ empty_linge6 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,};
 linge7_ empty_linge7 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1};
 linge8_ empty_linge8 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1};
 linge9_ empty_linge9 = {  .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1,.box[8]=1};
 linge10_ empty_linge10 ={ .box[0]=1,.box[1]=1,.box[2]=1,.box[3]=1,.box[4]=1,.box[5]=1,.box[6]=1,.box[7]=1,.box[8]=1,.box[9]=1,};
-
-
+// colors used to runder colord text
 const SDL_Color white = { .r = 255, .g = 255, .b = 255};
 const SDL_Color black = { .r = 0, .g = 0, .b = 0};
-
+// data initialisation :
 data_grid6_ data_grid6;
 data_grid6_ new6;
 data_grid7_ data_grid7;
@@ -57,9 +53,8 @@ data_grid9_ data_grid9;
 data_grid9_ new9;
 data_grid10_ data_grid10;
 data_grid10_ new10;
-
-int pass=1;
-int prev=0;
+int pass=1; // linge of input
+int prev=0; 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int isASCII(char* c){
     for(int i=0;*(c+i)!='\0';i++) {if(c[i]<0 || c[i]>127) return 0;}
@@ -185,7 +180,7 @@ void score(login_txt_ player,game_options_ opt){
 affichageTop  affichage;
 int top_seen=0;
 
-void fetch_stats(){
+void show_top_players(){
     top_seen=1;
     FILE* stat_file = fopen("data/topPlayers.txt", "r");
     
@@ -316,6 +311,7 @@ int motFrancais(char *mot,int nblettres){
     return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
+// reset user input in input and singup
 void reset_input(){
     i=0;
     while(i<25){
@@ -327,7 +323,7 @@ void reset_input(){
     }
     menu.input_state=1;
 }
-
+// take user login text to verify it and print it on screen
 void login_txt_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
  
@@ -360,7 +356,7 @@ void login_txt_input(SDL_Renderer* renderer,char* text){
 
         render_text_on_xy(renderer,text,340,315,black);
 }
-
+// takes usre passwd and show it as "*"
 void login_passwd_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
     SDL_Event event;
@@ -383,8 +379,8 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
                         text[strlen(text)-1] = 0;
                         break;
                     case SDL_SCANCODE_RETURN:
-                        if (login(login_data)==1) {
-                            game.state=PLAYING_PARAMETERS_STATE;
+                        if (login(login_data)==1) { // if login data is correct
+                            game.state=PLAYING_PARAMETERS_STATE; // move rendrer to playing sceen
                             menu.select=NOT_SELECTED;
                             menu.hover=NOT_SELECTED;
                             SDL_StopTextInput();
@@ -398,18 +394,18 @@ void login_passwd_input(SDL_Renderer* renderer,char* text){
     }  
         render_text_on_xy(renderer,login_data.id,340,315,black);
         i=0;
-        while(i<strlen(text)){
+        while(i<strlen(text)){ // hide pass
             hide[i]='*';
             i++;
         }
         render_text_on_xy(renderer,hide,340,395,black);       
         i=0;
-        while(i<25){
-            hide[i]=0;
+        while(i<25){ // if usr deleted a char from pass delet it from screen
+            hide[i]=0; 
             i++;
         }
 }
-
+// render login BG  and take input
 void render_login(SDL_Renderer *renderer){
     render_on_xy(LOGIN_BG,renderer,0,0);
     render_on_xy(LOG_IN,renderer,329,479);
@@ -428,7 +424,7 @@ void render_login(SDL_Renderer *renderer){
     
 
     }
-
+// take singup id
 void singup_txt_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
  
@@ -459,7 +455,7 @@ void singup_txt_input(SDL_Renderer* renderer,char* text){
     }
 render_text_on_xy(renderer,text,340,315,black);
 }
-
+// take singup passwd
 void singup_passwd_input(SDL_Renderer* renderer,char* text){
     SDL_StartTextInput();
     SDL_Event event;
@@ -505,7 +501,7 @@ void singup_passwd_input(SDL_Renderer* renderer,char* text){
             i++;
         }
 }
-
+// render singup and take input
 void render_singup(SDL_Renderer *renderer){
     render_on_xy(SINGUP_BG,renderer,0,0);
     render_on_xy(SING_UP,renderer,329,479); // login botton
@@ -514,7 +510,6 @@ void render_singup(SDL_Renderer *renderer){
             singup_txt_input(renderer,singup_data.id);
         case INPUT_S_PASSWD :
             singup_passwd_input(renderer,singup_data.passwd);
-
     // hover        
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -522,13 +517,11 @@ void render_singup(SDL_Renderer *renderer){
     { render_on_xy(SING_UP,renderer,329+4,479);}
 }
 }
-
 //render top players :
-
 void render_top_players(SDL_Renderer *renderer){
     render_on_xy(TOP_PLAYERS_BG,renderer,0,0);
-    int ne=80;
-    if (top_seen == 0){fetch_stats();}
+    int ne=80; // diff between 2 linges
+    if (top_seen == 0){show_top_players();}
     render_text_on_xy(renderer,affichage.ligne1,132,167,white);
     render_text_on_xy(renderer,affichage.ligne2,132,167+ne,white);
     render_text_on_xy(renderer,affichage.ligne3,132,167+2*ne,white);
@@ -539,49 +532,36 @@ void render_top_players(SDL_Renderer *renderer){
     render_text_on_xy(renderer,affichage.ligne8,500,167+2*ne,white);
     render_text_on_xy(renderer,affichage.ligne9,500,167+3*ne,white);
     render_text_on_xy(renderer,affichage.ligne10,500,167+4*ne,white);
-    
-
 }
-
-
+// render  playing menu
 void render_game_menu(SDL_Renderer *renderer){
     int x1=24,y1=242,nxt=54;  // x1,y1 pos of first botton, nxt : how far is next pos 
-    render_on_xy(GAME_BG,renderer,0,0);
-
-    render_on_xy(NBR_6,renderer,x1,y1);
+    render_on_xy(GAME_BG,renderer,0,0); // BG
+    render_on_xy(NBR_6,renderer,x1,y1); // nbr 6 botton
     render_on_xy(NBR_7,renderer,x1,y1+nxt);
     render_on_xy(NBR_8,renderer,x1,y1+2*nxt);
     render_on_xy(NBR_9,renderer,x1,y1+3*nxt);
     render_on_xy(NBR_10,renderer,x1,y1+4*nxt);
-
-    int x2=716,y2=250,nxt2=70;
+    int x2=716,y2=250,nxt2=70; // x2,y2 pos of first botton, nxt : how far is next pos 
     render_on_xy(TIME_10,renderer,x2,y2);
     render_on_xy(TIME_15,renderer,x2,y2+nxt2);
     render_on_xy(TIME_20,renderer,x2,y2+2*nxt2);
-
     int y3=533;
-    render_on_xy(START_BT,renderer,445,y3);
-    render_on_xy(RESET_BT,renderer,445-BOTTON_H-30,y3);
-    render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60,y3);
-
-
-    int mouse_x, mouse_y;
-    SDL_GetMouseState(&mouse_x, &mouse_y);
-    
-    // bottons hover effect : /////////////////////////////////////////////////////////
+    render_on_xy(START_BT,renderer,445,y3); // start botton
+    render_on_xy(RESET_BT,renderer,445-BOTTON_H-30,y3); // reset // botton
+    render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60,y3); // logout botton
+    int mouse_x, mouse_y; 
+    SDL_GetMouseState(&mouse_x, &mouse_y); // takes mouse position
+    // bottons hover effect : ///
     if (mouse_x > 445 && mouse_x < 445 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
          render_on_xy(START_BT,renderer,445+4,y3);
-            game_options.hover=START_SELECTED;
-    }
-
+            game_options.hover=START_SELECTED;}
     if (mouse_x > 445-BOTTON_H-30 && mouse_x < 445-BOTTON_H-30 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
          render_on_xy(RESET_BT,renderer,445-BOTTON_H-30+4,y3);
             game_options.hover=RESET_SELECTED;}    
-    
     if (mouse_x > 445-2*BOTTON_H-60 && mouse_x < 445-2*BOTTON_H-60 + BOTTON_H && mouse_y > y3 && mouse_y < y3 + BOTTON_W){
          render_on_xy(LOGOUT_BT,renderer,445-2*BOTTON_H-60+4,y3);
             game_options.hover=LOGOUT_SELECTED;}
-    // nbr arrows effects : ///////////////////////////////////////////////////////////
     if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1 && mouse_y < y1 + ARROW_W){
         render_on_xy(NBR_6,renderer,x1+1,y1);
         game_options.hover=NBR_6_SELECTED;}
@@ -597,25 +577,17 @@ void render_game_menu(SDL_Renderer *renderer){
     if (mouse_x > x1 && mouse_x < x1 + ARROW_H && mouse_y > y1+4*nxt && mouse_y < y1+4*nxt + ARROW_W){
         render_on_xy(NBR_10,renderer,x1+1,y1+4*nxt);
         game_options.hover=NBR_10_SELECTED;}
-
-// nbr arrows effects : ///////////////////////////////////////////////////////////
-
     if (mouse_x > x2 && mouse_x < x2 + ARROW_H && mouse_y > y2 && mouse_y < y2 + ARROW_W){
         render_on_xy(TIME_10,renderer,x2-1,y2);
-        game_options.hover=TIME_10_SELECTED;
-    }
+        game_options.hover=TIME_10_SELECTED;}
     if (mouse_x > x2 && mouse_x < x2 + ARROW_H && mouse_y > y2+nxt2 && mouse_y < y2+nxt2 + ARROW_W){
         render_on_xy(TIME_15,renderer,x2-1,y2+nxt2);
-        game_options.hover=TIME_15_SELECTED;
-    }
+        game_options.hover=TIME_15_SELECTED;}
     if (mouse_x > x2 && mouse_x < x2 + ARROW_H && mouse_y > y2+2*nxt2 && mouse_y < y2+2*nxt2 + ARROW_W){
         render_on_xy(TIME_20,renderer,x2-1,y2+2*nxt2);
-        game_options.hover=TIME_20_SELECTED;
-    }
-
+        game_options.hover=TIME_20_SELECTED;}
 }
-
-// render box : 
+// render box BG ( red , yellow , black , bleu)
 void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
     switch (boxBG){
         case BOX_R_BLACK:render_on_xy(BOX_BLACK_BG,renderer,x,y);break;
@@ -624,47 +596,39 @@ void render_box(SDL_Renderer *renderer,int boxBG,int x,int y){
         case BOX_R_YELLOW:render_on_xy(BOX_YELLOW_BG,renderer,x,y); break;
     }
 }
-
+// takes player input in the game: takes only alphabet and enter to verify .. 
 void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_letters){
-
-                    tempsActuel = SDL_GetTicks();
-                        if (tempsActuel - tempsPrecedent > 1000){
-                        temps--;
-                        if (temps == 0){ 
-                            pass++;temps=game_options.nbr_time;
-                            i=0;
-                            prev=0;
-                        }
-                        tempsPrecedent = tempsActuel;
-                        }
-
-
+                    tempsActuel = SDL_GetTicks(); // timer
+                        if (tempsActuel - tempsPrecedent > 1000){ temps--; // every 1s time-1
+                            if (temps == 0){  // if time =0 move to next linge
+                                pass++; temps=game_options.nbr_time; i=0; prev=0;} 
+                        tempsPrecedent = tempsActuel;} // timer 
                 SDL_Event event;  //SDL_Event event;
                  while(SDL_PollEvent(&event)){
-
                     switch (event.type){
                         case SDL_QUIT:
-                               running = false; break;
+                               running = false; break; // X botton case
                         case SDL_KEYDOWN: // Spesial keys cases
                             switch (event.key.keysym.scancode){ 
-                                case SDL_SCANCODE_BACKSPACE: // del last element :
+                                case SDL_SCANCODE_BACKSPACE: // delete last element :
                                     text[i-1]=0;chow[i-1]=0;box[i-1]=BOX_R_BLACK; i--; break;
                                  case SDL_SCANCODE_RETURN:
                                     if (i==nbr_letters){
-                                        if(motFrancais(text,nbr_letters)==1){
-                                            if(correct(text,playing_data6.generated)==1){
+                                        if(motFrancais(text,nbr_letters)==1){ // verify if the intred word is french
+                                            if(correct(text,playing_data6.generated)==1){ 
                                                 game.state=GAME_OVER_STATE;
-                                                score(login_data,game_options);
-                                                game_over(renderer,1,text);
+                                                score(login_data,game_options); // add score
+                                                game_over(renderer,1,text); // move to game_over state
                                             }
                                             verification(playing_data6.generated,text,box);
                                         }
                                     pass++;// move to next linge
                                     i=0; // rest typing cursur place
                                     prev=0;
-                                    temps=game_options.nbr_time;
+                                    temps=game_options.nbr_time; // reset timer
                                     }
                                     break;
+                                  /******************** TAKE INPUT FROM KEYBOARD***********************/
                                 case SDL_SCANCODE_Q: text[i]='A'; chow[i]=A;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_W: text[i]='Z'; chow[i]=Z;box[i]=BOX_R_BLEU; i++; break;
                                 case SDL_SCANCODE_E: text[i]='E'; chow[i]=E;box[i]=BOX_R_BLEU; i++; break;
@@ -695,7 +659,7 @@ void player_input(SDL_Renderer* renderer ,char* text,int* chow,int* box,int nbr_
         }
     }
 }
-// empty  grids :
+// empty  grids : /////// I didn't use loops in because of SDL time and rendring problems  ////////////
 void render_empty_grid6(SDL_Renderer *renderer){
     render_linge6(renderer,empty_linge6,LN_1);render_linge6(renderer,empty_linge6,LN_2);
     render_linge6(renderer,empty_linge6,LN_3);render_linge6(renderer,empty_linge6,LN_4);
@@ -726,7 +690,7 @@ void render_empty_grid10(SDL_Renderer *renderer){
     render_linge10(renderer,empty_linge10,LN_5);render_linge10(renderer,empty_linge10,LN_6);
     render_linge10(renderer,empty_linge10,LN_7);}
 
-
+// render data of grids to screen : /////// I didn't use loops in because of SDL time and rendring problems  ////////////
 void render_data6(SDL_Renderer* renderer){
     render_linge6(renderer,data_grid6.linge1,1);render_linge_text6(renderer,data_grid6.linge1,1);
     render_linge6(renderer,data_grid6.linge2,2);render_linge_text6(renderer,data_grid6.linge2,2);
@@ -734,8 +698,7 @@ void render_data6(SDL_Renderer* renderer){
     render_linge6(renderer,data_grid6.linge4,4);render_linge_text6(renderer,data_grid6.linge4,4);
     render_linge6(renderer,data_grid6.linge5,5);render_linge_text6(renderer,data_grid6.linge5,5);
     render_linge6(renderer,data_grid6.linge6,6);render_linge_text6(renderer,data_grid6.linge6,6);
-    render_linge6(renderer,data_grid6.linge7,7);render_linge_text6(renderer,data_grid6.linge7,7);
-}
+    render_linge6(renderer,data_grid6.linge7,7);render_linge_text6(renderer,data_grid6.linge7,7);}
 
 void render_data7(SDL_Renderer* renderer){
     render_linge7(renderer,data_grid7.linge1,1);render_linge_text7(renderer,data_grid7.linge1,1);
@@ -744,8 +707,7 @@ void render_data7(SDL_Renderer* renderer){
     render_linge7(renderer,data_grid7.linge4,4);render_linge_text7(renderer,data_grid7.linge4,4);
     render_linge7(renderer,data_grid7.linge5,5);render_linge_text7(renderer,data_grid7.linge5,5);
     render_linge7(renderer,data_grid7.linge6,6);render_linge_text7(renderer,data_grid7.linge6,6);
-    render_linge7(renderer,data_grid7.linge7,7);render_linge_text7(renderer,data_grid7.linge7,7);
-}
+    render_linge7(renderer,data_grid7.linge7,7);render_linge_text7(renderer,data_grid7.linge7,7);}
 
 void render_data8(SDL_Renderer* renderer){
     render_linge8(renderer,data_grid8.linge1,1);render_linge_text8(renderer,data_grid8.linge1,1);
@@ -754,8 +716,7 @@ void render_data8(SDL_Renderer* renderer){
     render_linge8(renderer,data_grid8.linge4,4);render_linge_text8(renderer,data_grid8.linge4,4);
     render_linge8(renderer,data_grid8.linge5,5);render_linge_text8(renderer,data_grid8.linge5,5);
     render_linge8(renderer,data_grid8.linge6,6);render_linge_text8(renderer,data_grid8.linge6,6);
-    render_linge8(renderer,data_grid8.linge7,7);render_linge_text8(renderer,data_grid8.linge7,7);
-}
+    render_linge8(renderer,data_grid8.linge7,7);render_linge_text8(renderer,data_grid8.linge7,7);}
 
 void render_data9(SDL_Renderer* renderer){
     render_linge9(renderer,data_grid9.linge1,1);render_linge_text9(renderer,data_grid9.linge1,1);
@@ -764,8 +725,7 @@ void render_data9(SDL_Renderer* renderer){
     render_linge9(renderer,data_grid9.linge4,4);render_linge_text9(renderer,data_grid9.linge4,4);
     render_linge9(renderer,data_grid9.linge5,5);render_linge_text9(renderer,data_grid9.linge5,5);
     render_linge9(renderer,data_grid9.linge6,6);render_linge_text9(renderer,data_grid9.linge6,6);
-    render_linge9(renderer,data_grid9.linge7,7);render_linge_text9(renderer,data_grid9.linge7,7);
-}
+    render_linge9(renderer,data_grid9.linge7,7);render_linge_text9(renderer,data_grid9.linge7,7);}
 
 void render_data10(SDL_Renderer* renderer){
     render_linge10(renderer,data_grid10.linge1,1);render_linge_text10(renderer,data_grid10.linge1,1);
@@ -777,25 +737,25 @@ void render_data10(SDL_Renderer* renderer){
     render_linge10(renderer,data_grid10.linge7,7);render_linge_text10(renderer,data_grid10.linge7,7);
 }
 
-
+// in case playing 6 letters word /////// I didn't use loops in because of SDL time and rendring problems  ////////////
 void input_data6(SDL_Renderer* renderer){
-    switch(pass){
+    switch(pass){ // pass is the linge of the grid6 we are typing in
         case 1 :
-                if(prev==0){
+                if(prev==0){ // prev see if this part have been rendred or not
                 data_grid6.linge1.box[1]=BOX_R_RED;
                 data_grid6.linge1.chow[1]=txt_to_chow(playing_data6.generated,1);
                 data_grid6.linge1.box[NBR_L_6-2]=BOX_R_RED;
                 data_grid6.linge1.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
-               prev=1;
-           }
-            player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box,6);
+               prev=1;}
+            player_input(renderer ,data_grid6.linge1.text,data_grid6.linge1.chow,data_grid6.linge1.box,6); // take input to linge1
             break;
         case 2 :
-            if(prev==0){
-                data_grid6.linge2.box[1]=BOX_R_RED;
+            if(prev==0){ // prev see if this part have been rendred or not
+                data_grid6.linge2.box[1]=BOX_R_RED; // show indicateurs again
                 data_grid6.linge2.chow[1]=txt_to_chow(playing_data6.generated,1);
                 data_grid6.linge2.box[NBR_L_6-2]=BOX_R_RED;
                 data_grid6.linge2.chow[NBR_L_6-2]=txt_to_chow(playing_data6.generated,NBR_L_6-2);
+                // show reviled letters in the next linge : 
                 if(data_grid6.linge1.box[0]==BOX_R_RED){
                     data_grid6.linge2.box[0]=BOX_R_RED;data_grid6.linge2.chow[0]=data_grid6.linge1.chow[0];}
                 if(data_grid6.linge1.box[1]==BOX_R_RED){
@@ -1631,7 +1591,7 @@ void input_data10(SDL_Renderer* renderer){
             break;
     }
 }
-///////////////////////////////////////////
+/// render play as gest////////////////////////////////////////
 void render_play_as_gest(SDL_Renderer *renderer){
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"WARNING","Your Progress wont be saved :(",NULL);
                 game.state=PLAYING_PARAMETERS_STATE;
@@ -1639,14 +1599,13 @@ void render_play_as_gest(SDL_Renderer *renderer){
                 menu.hover=NOT_SELECTED;
                 login_data.score=0;
 }
+// reset evry thi,g :
 void  reset_data(){
-// empty all grids :
-data_grid6 = new6; data_grid7 = new7; data_grid8 = new8; data_grid9 = new9;
-// empty game options ;
-game_options.select=0; game_options.nbr_letters=0; game_options.nbr_time=20;
+data_grid6 = new6; data_grid7 = new7; data_grid8 = new8; data_grid9 = new9;  // empty all grids
+game_options.select=0; game_options.nbr_letters=0; game_options.nbr_time=20; // empty game options 
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////:////////////
-void game_over(SDL_Renderer* renderer,int pop,char* word){
+///// render game over state //////////////////////////////////////////////////////
+void game_over(SDL_Renderer* renderer,int win_or_lose,char* word){
     SDL_Event event;
     while(running && game.state==GAME_OVER_STATE){
         while(SDL_PollEvent(&event)){
@@ -1667,13 +1626,12 @@ void game_over(SDL_Renderer* renderer,int pop,char* word){
         }       
         }
         SDL_RenderClear(renderer);
-
-        switch(pop){
-                case 1 :
+        switch(win_or_lose){
+                case 1 : // win
                     render_on_xy(WON_BG,renderer,0,0);
                     render_text_on_xy(renderer,word,370,500,white);
                     break;
-                case 0 :
+                case 0 : // lose
                     render_on_xy(LOSE_BG,renderer,0,0);
                     render_text_on_xy(renderer,word,370,500,white); 
                     break;
@@ -1681,7 +1639,7 @@ void game_over(SDL_Renderer* renderer,int pop,char* word){
     SDL_RenderPresent(renderer);
                 }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////playing case /////////////////////////////////////////////////////////////////////////////////////////////////////////
 void playing_loop(SDL_Renderer *renderer){
 
         SDL_Event event;
@@ -1728,29 +1686,19 @@ void playing_loop(SDL_Renderer *renderer){
                 reset_data();
                 break;
             }
-        switch(game_options.nbr_letters){
-                case NBR_L_6 :
-                    render_empty_grid6(renderer);input_data6(renderer);render_data6(renderer);
-                    break;
-                case NBR_L_7 :
-                    render_empty_grid7(renderer);input_data7(renderer);render_data7(renderer);
-                    break;
-                case NBR_L_8 :
-                    render_empty_grid8(renderer);input_data8(renderer);render_data8(renderer);
-                    break;
-                case NBR_L_9 :
-                    render_empty_grid9(renderer);input_data9(renderer);render_data9(renderer);
-                    break;
-              case NBR_L_10 :
-                    render_empty_grid10(renderer);input_data10(renderer);render_data10(renderer);
-                    break;
+        switch(game_options.nbr_letters){ // playing the nbr of letters that player wanted ...
+                case NBR_L_6 : render_empty_grid6(renderer); input_data6(renderer); render_data6(renderer); break;
+                case NBR_L_7 : render_empty_grid7(renderer); input_data7(renderer); render_data7(renderer); break;
+                case NBR_L_8 : render_empty_grid8(renderer); input_data8(renderer); render_data8(renderer); break;
+                case NBR_L_9 : render_empty_grid9(renderer); input_data9(renderer); render_data9(renderer); break;
+              case NBR_L_10 : render_empty_grid10(renderer); input_data10(renderer); render_data10(renderer); break;
     }        
-    render_time(renderer);
-    render_score(renderer);
+    render_time(renderer); // aficher le temps
+    render_score(renderer); // aficher score
     SDL_RenderPresent(renderer);
     }
-}
-////////////////////////////////////////////////////////////////////////////////////////////////:
+} ////////////////////////////////////////////////////////////////////:
+// afichage time
 void render_time(SDL_Renderer* renderer){
     char str[10];
     sprintf(str, "%d", temps);    // Now str contains the integer as characters
@@ -1767,7 +1715,7 @@ void render_time(SDL_Renderer* renderer){
     TTF_CloseFont(font);
     TTF_Quit();
 }
-
+// afichage score
 void render_score(SDL_Renderer* renderer){
     int i = login_data.score;
     char str[10];
@@ -1785,7 +1733,7 @@ void render_score(SDL_Renderer* renderer){
     TTF_CloseFont(font);
     TTF_Quit();
 }
-
+// aficher empty grid : 
 void render_options(SDL_Renderer* renderer){
     switch(game_options.nbr_letters){
         case NBR_L_6 : render_empty_grid6(renderer); break;
@@ -1797,28 +1745,15 @@ void render_options(SDL_Renderer* renderer){
         render_time(renderer);
         render_score(renderer);
 }
-
-/*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-*/
-
-// menu_loop :
+// main_menu_loop :
 void menu_loop(SDL_Renderer *renderer){
-
-
      //loop
     SDL_Event event;
-    while(running && game.state==MENU_STATE)
-    {
-        // Process events
-        while(SDL_PollEvent(&event))
-        {
-         
-
+    while(running && game.state==MENU_STATE){
+        while(SDL_PollEvent(&event)){// Process events
         switch(event.type){
             case SDL_QUIT:
-                running = false; break;// X botton XD
-             
+                running = false; break;// X botton XD     
             case SDL_MOUSEBUTTONDOWN:
                  menu.select = menu.hover; // if mouse inside botton borders + botton click => SELECTED
                 break;
@@ -1828,7 +1763,7 @@ void menu_loop(SDL_Renderer *renderer){
                         menu.select=NOT_SELECTED;
                         break;
                     }
-}
+        }
         }
         SDL_RenderClear(renderer);
         switch(menu.select) {
@@ -1854,9 +1789,8 @@ void menu_loop(SDL_Renderer *renderer){
         SDL_RenderPresent(renderer);  // Show what was drawn
     }
     
-}
+}//////////////////////////////////////////////////////////////////////////////////////////////////
 // game state loop ; 
-//////////////////////////////////////////////////////////////////////////////////////////////////
 void game_loop(SDL_Renderer *renderer){
      //loop
     SDL_Event event;
@@ -1865,8 +1799,6 @@ void game_loop(SDL_Renderer *renderer){
         // Process events
         while(SDL_PollEvent(&event))
         {
-         
-
         switch(event.type){
             case SDL_QUIT:
                 running = false; break;// X botton XD
@@ -1958,6 +1890,8 @@ void game_loop(SDL_Renderer *renderer){
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//main_main_loop ::
+
 void main_loop(SDL_Renderer *renderer){
     SDL_Event event;
     while(running){

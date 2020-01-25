@@ -7,7 +7,6 @@
 
 #include "game.h"
 #include "rendering.h"
-#include "logic.h"
 #include "menu-items.h"
 
 // variables needed ; 

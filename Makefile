@@ -1,10 +1,11 @@
 # A simple Makefile f	or compiling small SDL projects
 
 # set the compiler
+
 CC := clang
 
 # set the compiler flags
-CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image -lSDL2_ttf -lm
+CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image -lSDL2_ttf -lm -w
 
 # add header files here
 HDRS := game.h rendering.h menu-items.h
