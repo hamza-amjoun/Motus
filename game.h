@@ -271,9 +271,23 @@ typedef struct{
     char id[25];
     int score;
 }topPlayer;
+
 typedef struct{
-    char ligne[40];
+	char ligne1[40];
+	char ligne2[40];
+	char ligne3[40];
+	char ligne4[40];
+	char ligne5[40];
+	char ligne6[40];
+	char ligne7[40];
+	char ligne8[40];
+	char ligne9[40];
+	char ligne10[40];
 }affichageTop;
+
+typedef struct{
+	char mot[40];
+}temp;
 
 
 #endif  // GAME_H_

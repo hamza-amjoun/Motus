@@ -1,16 +1,16 @@
 # A simple Makefile f	or compiling small SDL projects
 
 # set the compiler
-CC := gcc
+CC := clang
 
 # set the compiler flags
 CFLAGS := `sdl2-config --libs --cflags` -ggdb3 -O0 --std=c99 -Wall -lSDL2_image -lSDL2_ttf -lm
 
 # add header files here
-HDRS := game.h logic.h rendering.h menu-items.h
+HDRS := game.h rendering.h menu-items.h
 
 # add source files here
-SRCS := main.c logic.c rendering.c menu-items.c
+SRCS := main.c rendering.c menu-items.c
 
 # generate names of object files
 OBJS := $(SRCS:.c=.o)

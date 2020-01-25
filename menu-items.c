@@ -13,6 +13,7 @@
 #include "menu-items.h"	
 #include "rendering.h"
 
+int sco=0;
 login_txt_ login_data;
 singup_txt_ singup_data;
 bool running = true;
@@ -60,6 +61,10 @@ data_grid10_ new10;
 int pass=1;
 int prev=0;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int isASCII(char* c){
+    for(int i=0;*(c+i)!='\0';i++) {if(c[i]<0 || c[i]>127) return 0;}
+    return 1;
+}
 char* tochar(int i,char* str){
   sprintf(str, "%d", i);
   return str;
@@ -102,7 +107,8 @@ int signup(singup_txt_ player){
         login_txt_ user;
         strcpy(user.id,player.id);strcpy(user.passwd,player.passwd);user.score=0;
         if(existe(user)==0) {fwrite(&player,sizeof(player),1,f); signup=1;}
-        else {/*printf("existe déjà\n");*/signup=0;}//notification ;
+        else { SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"Oops!!","alredy exists :( ",NULL);
+        signup=0;}//notification ;
     }
     fclose(f);
     return signup;
@@ -112,7 +118,9 @@ int login(login_txt_ player){
     if(!f) {printf("Erreur ouverture fichier\n"); exit(0);}
     return existe(player);
 }
+
 void topPlayers(login_txt_ player,int score){
+    
     FILE* f=fopen("data/topPlayers.txt","a+");
     if(empty("data/topPlayers.txt","a+")==1){
         fprintf(f,"%s %d\n",player.id,score);
@@ -139,12 +147,12 @@ void topPlayers(login_txt_ player,int score){
         while(i>-1){
             if(strcmp(top[i].id,"0")!=0 && top[i].score!=0) fprintf(f,"%s %d\n",top[i].id,top[i].score);
             i--;
-
         }
         fclose(f);
     }
 }
 void score(login_txt_ player,game_options_ opt){
+    sco=1;
     int pourcentage,score;
     switch(opt.nbr_time){
         case 10: pourcentage=5;break;
@@ -174,36 +182,49 @@ void score(login_txt_ player,game_options_ opt){
     fclose(n);
     fclose(f);
 }
-void showTop(){
-    FILE* f=fopen("data/topPlayers.txt","r");
-    if(!f) exit(-1);
-    fseek(f,0L,SEEK_SET);
-    char str[20];
-    affichageTop *affichage=(affichageTop*)malloc(sizeof(affichage)*10);
-    topPlayer *top=(topPlayer*)malloc(sizeof(topPlayer)*11); 
-    int i=0,k,j;
-    while(!feof(f)){
-        fscanf(f,"%s%d",top[i].id,&top[i].score);
-        i++;
-    }
-    i--;
-    fclose(f);
-    for (j=0;j<i-1;j++){
-        for(k=j+1;k<i;k++){
-            if(top[j].score>top[k].score) swap(&top[j],&top[k]);
-        }
-    }
-    j=0;
-    while(i>-1){
-        if(strcmp(top[i].id,"0")!=0 && top[i].score!=0){char tempo[40];strcpy(tempo,top[i].id);strcat(tempo," ");strcat(tempo,tochar(top[i].score,str));strcpy(affichage[j].ligne,tempo);j++;}i--;
-    }
-    for (int i = 0; i < j; i++)
-    {
-        printf("%s\n",affichage[i].ligne );
+affichageTop  affichage;
+int top_seen=0;
 
-    }
+void fetch_stats(){
+    top_seen=1;
+    FILE* stat_file = fopen("data/topPlayers.txt", "r");
+    
+    char ligne1[40];char ligne11[40];
+    char ligne2[40];char ligne21[40];
+    char ligne3[40];char ligne31[40];
+    char ligne4[40];char ligne41[40];
+    char ligne5[40];char ligne51[40];
+    char ligne6[40];char ligne61[40];
+    char ligne7[40];char ligne71[40];
+    char ligne8[40];char ligne81[40];
+    char ligne9[40];char ligne91[40];
+    char ligne10[40];char ligne101[40];   
+    char espace[20]="         ";
+
+    fscanf(stat_file,"%s",ligne1);fscanf(stat_file,"%s",ligne11); strcat(ligne1,espace);
+    fscanf(stat_file,"%s",ligne2);fscanf(stat_file,"%s",ligne21);strcat(ligne2,espace);
+    fscanf(stat_file,"%s",ligne3);fscanf(stat_file,"%s",ligne31);strcat(ligne3,espace);
+    fscanf(stat_file,"%s",ligne4);fscanf(stat_file,"%s",ligne41);strcat(ligne4,espace);
+    fscanf(stat_file,"%s",ligne5);fscanf(stat_file,"%s",ligne51);strcat(ligne5,espace);
+    fscanf(stat_file,"%s",ligne6);fscanf(stat_file,"%s",ligne61);strcat(ligne6,espace);
+    fscanf(stat_file,"%s",ligne7);fscanf(stat_file,"%s",ligne71);strcat(ligne7,espace);
+    fscanf(stat_file,"%s",ligne8);fscanf(stat_file,"%s",ligne81);strcat(ligne8,espace);
+    fscanf(stat_file,"%s",ligne9);fscanf(stat_file,"%s",ligne91);strcat(ligne9,espace);
+    fscanf(stat_file,"%s",ligne10);fscanf(stat_file,"%s",ligne101);strcat(ligne10,espace);
+
+    strcat(ligne1,ligne11); strcpy(affichage.ligne1,ligne1);
+    strcat(ligne2,ligne21); strcpy(affichage.ligne2,ligne2);
+    strcat(ligne3,ligne31); strcpy(affichage.ligne3,ligne3);
+    strcat(ligne4,ligne41); strcpy(affichage.ligne4,ligne4);
+    strcat(ligne5,ligne51); strcpy(affichage.ligne5,ligne5);
+    strcat(ligne6,ligne61); strcpy(affichage.ligne6,ligne6);
+    strcat(ligne7,ligne71); strcpy(affichage.ligne7,ligne7);
+    strcat(ligne8,ligne81); strcpy(affichage.ligne8,ligne8);
+    strcat(ligne9,ligne91); strcpy(affichage.ligne9,ligne9);
+    strcat(ligne10,ligne101); strcpy(affichage.ligne10,ligne10);
+
+    fclose(stat_file);
 }
-
 //génération aléatoire d'un mot
 char* generationMot(FILE* f, char*mot){
     
@@ -507,17 +528,18 @@ void render_singup(SDL_Renderer *renderer){
 void render_top_players(SDL_Renderer *renderer){
     render_on_xy(TOP_PLAYERS_BG,renderer,0,0);
     int ne=80;
-    render_text_on_xy(renderer,"player_1 999",132,167,white);
-    render_text_on_xy(renderer,"player_2 999",132,167+ne,white);
-    render_text_on_xy(renderer,"player_3 999",132,167+2*ne,white);
-    render_text_on_xy(renderer,"player_4 999",132,167+3*ne,white);
-    render_text_on_xy(renderer,"player_5 999",132,167+4*ne,white);
-    render_text_on_xy(renderer,"player_6 999",500,167,white);
-    render_text_on_xy(renderer,"player_7 999",500,167+ne,white);
-    render_text_on_xy(renderer,"player_8 999",500,167+2*ne,white);
-    render_text_on_xy(renderer,"player_9 999",500,167+3*ne,white);
-    render_text_on_xy(renderer,"player_10 999",500,167+4*ne,white);
-    showTop();
+    if (top_seen == 0){fetch_stats();}
+    render_text_on_xy(renderer,affichage.ligne1,132,167,white);
+    render_text_on_xy(renderer,affichage.ligne2,132,167+ne,white);
+    render_text_on_xy(renderer,affichage.ligne3,132,167+2*ne,white);
+    render_text_on_xy(renderer,affichage.ligne4,132,167+3*ne,white);
+    render_text_on_xy(renderer,affichage.ligne5,132,167+4*ne,white);
+    render_text_on_xy(renderer,affichage.ligne6,500,167,white);
+    render_text_on_xy(renderer,affichage.ligne7,500,167+ne,white);
+    render_text_on_xy(renderer,affichage.ligne8,500,167+2*ne,white);
+    render_text_on_xy(renderer,affichage.ligne9,500,167+3*ne,white);
+    render_text_on_xy(renderer,affichage.ligne10,500,167+4*ne,white);
+    
 
 }
 
@@ -1232,7 +1254,6 @@ void input_data8(SDL_Renderer* renderer){
                     data_grid8.linge7.box[5]=BOX_R_RED;data_grid8.linge7.chow[5]=data_grid8.linge6.chow[5];}
                 if(data_grid8.linge6.box[7]==BOX_R_RED){
                     data_grid8.linge7.box[7]=BOX_R_RED;data_grid8.linge7.chow[7]=data_grid8.linge6.chow[7];}
-
                 prev=1;
             }
             player_input(renderer ,data_grid8.linge7.text,data_grid8.linge7.chow,data_grid8.linge7.box,8);
@@ -1693,6 +1714,7 @@ void playing_loop(SDL_Renderer *renderer){
                     game.state=PLAYING_PARAMETERS_STATE;
                     game_options.hover=0;
                     prev=0;
+                    sco=0;
                     reset_data();
                 break;  
             case LOGOUT_SELECTED:
@@ -1702,6 +1724,7 @@ void playing_loop(SDL_Renderer *renderer){
                 game_options.select=NOT_SELECTED;
                 game_options.hover=0;
                 prev=0;
+                sco=0;
                 reset_data();
                 break;
             }
@@ -1811,6 +1834,7 @@ void menu_loop(SDL_Renderer *renderer){
         switch(menu.select) {
             case NOT_SELECTED:
                 menu.hover = render_menu(renderer); break;
+                top_seen=0; 
             case LOGIN_SELECTED:
                 render_login(renderer);
                  break;
