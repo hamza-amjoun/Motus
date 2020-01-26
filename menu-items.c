@@ -8,6 +8,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
+#include <fmodex/fmod.h>
 #include "game.h"
 #include "menu-items.h"	
 #include "rendering.h"
@@ -55,7 +56,7 @@ data_grid10_ data_grid10;
 data_grid10_ new10;
 int pass=1; // linge of input
 int prev=0; 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int isASCII(char* c){
     for(int i=0;*(c+i)!='\0';i++) {if(c[i]<0 || c[i]>127) return 0;}
     return 1;
@@ -115,7 +116,6 @@ int login(login_txt_ player){
 }
 
 void topPlayers(login_txt_ player,int score){
-    
     FILE* f=fopen("data/topPlayers.txt","a+");
     if(empty("data/topPlayers.txt","a+")==1){
         fprintf(f,"%s %d\n",player.id,score);
@@ -140,8 +140,9 @@ void topPlayers(login_txt_ player,int score){
         FILE* f=fopen("data/topPlayers.txt","a+");
         if(!f) printf("erreur\n");
         while(i>-1){
-            if(strcmp(top[i].id,"0")!=0 && top[i].score!=0) fprintf(f,"%s %d\n",top[i].id,top[i].score);
+            if(strcmp(top[i].id,"0")!=0 && top[i].score!=0 && isASCII(top[i].id)) fprintf(f,"%s %d\n",top[i].id,top[i].score);
             i--;
+
         }
         fclose(f);
     }
@@ -1597,9 +1598,8 @@ void render_play_as_gest(SDL_Renderer *renderer){
                 game.state=PLAYING_PARAMETERS_STATE;
                 menu.select=NOT_SELECTED;
                 menu.hover=NOT_SELECTED;
-                login_data.score=0;
-}
-// reset evry thi,g :
+                login_data.score=0;}
+// reset evry thing :
 void  reset_data(){
 data_grid6 = new6; data_grid7 = new7; data_grid8 = new8; data_grid9 = new9;  // empty all grids
 game_options.select=0; game_options.nbr_letters=0; game_options.nbr_time=20; // empty game options 
@@ -1691,8 +1691,8 @@ void playing_loop(SDL_Renderer *renderer){
                 case NBR_L_7 : render_empty_grid7(renderer); input_data7(renderer); render_data7(renderer); break;
                 case NBR_L_8 : render_empty_grid8(renderer); input_data8(renderer); render_data8(renderer); break;
                 case NBR_L_9 : render_empty_grid9(renderer); input_data9(renderer); render_data9(renderer); break;
-              case NBR_L_10 : render_empty_grid10(renderer); input_data10(renderer); render_data10(renderer); break;
-    }        
+                case NBR_L_10 : render_empty_grid10(renderer); input_data10(renderer); render_data10(renderer); break;
+    }         
     render_time(renderer); // aficher le temps
     render_score(renderer); // aficher score
     SDL_RenderPresent(renderer);
@@ -1714,7 +1714,7 @@ void render_time(SDL_Renderer* renderer){
     SDL_FreeSurface(surface);
     TTF_CloseFont(font);
     TTF_Quit();
-}
+}//////////////////////////////////////////////
 // afichage score
 void render_score(SDL_Renderer* renderer){
     int i = login_data.score;
@@ -1732,7 +1732,7 @@ void render_score(SDL_Renderer* renderer){
     SDL_FreeSurface(surface);
     TTF_CloseFont(font);
     TTF_Quit();
-}
+}///////////////////////////////////////////////
 // aficher empty grid : 
 void render_options(SDL_Renderer* renderer){
     switch(game_options.nbr_letters){
@@ -1744,7 +1744,7 @@ void render_options(SDL_Renderer* renderer){
     }
         render_time(renderer);
         render_score(renderer);
-}
+}///////////////////////////////////////////////////////////////////
 // main_menu_loop :
 void menu_loop(SDL_Renderer *renderer){
      //loop
@@ -1794,11 +1794,9 @@ void menu_loop(SDL_Renderer *renderer){
 void game_loop(SDL_Renderer *renderer){
      //loop
     SDL_Event event;
-    while(running && game.state==PLAYING_PARAMETERS_STATE )
-    {
+    while(running && game.state==PLAYING_PARAMETERS_STATE ){
         // Process events
-        while(SDL_PollEvent(&event))
-        {
+        while(SDL_PollEvent(&event)){
         switch(event.type){
             case SDL_QUIT:
                 running = false; break;// X botton XD

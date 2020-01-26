@@ -42,7 +42,6 @@
 #define BOX_RED_BG "res/box_red.png"
 #define BOX_YELLOW_BG "res/box_yellow.png"
 
-
 // alphabets : haerd worker I know xd
 #define A_R "res/a.png"
 #define B_R "res/b.png"

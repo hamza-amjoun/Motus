@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
-
+#include <fmodex/fmod.h>
 #include "game.h"
 #include "rendering.h"
 
@@ -16,7 +16,6 @@ int play_gest_x=171,play_gest_y=361;
 int top_players_x=394,top_players_y=413;
 int how_to_x=234,how_to_y=413;
 
-//login_txt_ login_data;
 
 
 // file to texture
