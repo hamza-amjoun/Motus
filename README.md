@@ -16,7 +16,7 @@ a game made from scratch using C language and SDL2
 ![game_menu8](Screenshots/game_menu8.png)
 
 
-![playing](Screenshots/playing.png)
+![playing](Screenshots/playing6.png)
 
 
 ![won](Screenshots/won.png)
